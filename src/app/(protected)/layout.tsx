@@ -35,6 +35,11 @@ export default async function ProtectedLayout({ children }: { children: React.Re
       </div>
       <div style={{ textAlign: 'center', paddingBottom: 20, fontSize: '10px', color: '#aaa' }}>
         fully vibecoded by sami nourji
+        <div style={{ marginTop: 4, fontSize: 9, color: '#b5b5b5' }}>
+          <a href="/terms" style={{ color: '#b5b5b5' }}>terms</a>
+          {' | '}
+          <a href="/privacy" style={{ color: '#b5b5b5' }}>privacy</a>
+        </div>
       </div>
       {showTutorial && <TutorialOverlay userId={user.id} />}
     </>
