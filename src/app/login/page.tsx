@@ -32,13 +32,13 @@ function LoginContent() {
           <tr>
             <td style={{ padding: '16px 20px', border: 'none' }}>
               <p style={{ fontSize: 13, marginBottom: 10, lineHeight: 1.6 }}>
-                A weekly gathering for Brown students who are building — or want to start.
-                Every Tuesday we share what we&apos;re working on, hear from builders in the room, and push each other.
-                No pitches. No slides. Just builders.
+                Builders Club is a community for Brown students who are building in tech, or want to start.
+                Every Tuesday we meet, share what we&apos;re working on, sometimes hear from speakers, and build for the rest of the time.
+                Join us at our next meeting!
               </p>
               <p style={{ fontSize: 11, color: '#828282', marginBottom: 10 }}>
                 Tuesdays, 7–9 PM · Nelson Center, 4th floor · Run by{' '}
-                <a href="https://emergentconference.org" target="_blank" rel="noopener noreferrer">Emergent</a> @ Brown.
+                <a href="https://emergentconference.org" target="_blank" rel="noopener noreferrer">Emergent</a> (A.J., Jameel, Rishi, and Sami).
               </p>
               <hr />
               <p style={{ marginBottom: 10, marginTop: 10, fontSize: 12 }}>

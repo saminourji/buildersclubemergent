@@ -53,10 +53,10 @@ export default async function DashboardPage() {
       <div style={{ background: '#fff', border: '1px solid #b0c4d8', padding: '10px 12px' }}>
         <p style={{ fontSize: 11, color: '#828282', marginBottom: 3 }}>ABOUT</p>
         <p style={{ fontSize: 12 }}>
-          <b>Builders Club</b> is a weekly gathering for Brown students who are building — or want to start.
-          Every Tuesday we meet, share what we&apos;re working on, hear from builders in the room, and push each other.
-          No pitches. No slides. Just builders.
-          Run by <a href="https://emergentconference.org" target="_blank" rel="noopener noreferrer">Emergent</a>.
+          <b>Builders Club</b> is a community for Brown students who are building in tech, or want to start.
+          Every Tuesday we meet, share what we&apos;re working on, sometimes hear from speakers, and build for the rest of the time.
+          Join us at our next meeting!
+          {' '}Run by <a href="https://emergentconference.org" target="_blank" rel="noopener noreferrer">Emergent</a> (A.J., Jameel, Rishi, and Sami).
         </p>
       </div>
 
