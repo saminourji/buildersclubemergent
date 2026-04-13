@@ -102,7 +102,7 @@ export default async function AdminMembersPage({
                   ? <span style={{ color: 'green' }}>[verified]</span>
                   : <span style={{ color: '#999' }}>[unverified]</span>}
               </td>
-              <td><AdminMemberActions memberId={m.id} isVerified={m.is_verified} isAdmin={m.is_admin} /></td>
+              <td><AdminMemberActions memberId={m.id} memberName={m.full_name ?? m.email} isVerified={m.is_verified} isAdmin={m.is_admin} /></td>
             </tr>
           ))}
         </tbody>

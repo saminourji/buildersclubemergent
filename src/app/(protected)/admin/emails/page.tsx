@@ -1,46 +1,29 @@
 import { createClient } from '@/lib/supabase/server'
-import { format } from 'date-fns'
-import { EmailComposer } from '@/components/email-composer'
-import { EmailBlast } from '@/types/database'
+import { CopyEmails } from '@/components/copy-emails'
 
 export default async function AdminEmailsPage() {
   const supabase = await createClient()
-  const { data: blasts } = await supabase
-    .from('email_blasts').select('*').order('sent_at', { ascending: false }).limit(20) as { data: EmailBlast[] | null }
+
+  const { data: allMembers } = await supabase
+    .from('profiles').select('email').eq('onboarding_complete', true).order('email')
+
+  const { data: verifiedMembers } = await supabase
+    .from('profiles').select('email').eq('is_verified', true).order('email')
+
+  const { data: unverifiedMembers } = await supabase
+    .from('profiles').select('email').eq('is_verified', false).eq('onboarding_complete', true).order('email')
 
   return (
     <>
-      <p><b>Email Blasts</b></p>
+      <p><b>Email Lists</b></p>
+      <p style={{ fontSize: 12, color: '#828282' }}>Copy email addresses to paste into your email client.</p>
       <hr />
 
-      <EmailComposer />
-
-      {blasts && blasts.length > 0 && (
-        <>
-          <hr />
-          <p style={{ fontSize: 11, color: '#828282', marginBottom: 4 }}>SENT</p>
-          <table>
-            <thead>
-              <tr>
-                <th>date</th>
-                <th>subject</th>
-                <th>audience</th>
-                <th>recipients</th>
-              </tr>
-            </thead>
-            <tbody>
-              {blasts.map(b => (
-                <tr key={b.id}>
-                  <td style={{ whiteSpace: 'nowrap', fontSize: 11 }}>{format(new Date(b.sent_at), 'MMM d, yyyy')}</td>
-                  <td>{b.subject}</td>
-                  <td style={{ fontSize: 11 }}>{b.audience}</td>
-                  <td>{b.recipient_count}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </>
-      )}
+      <CopyEmails
+        allEmails={allMembers?.map(m => m.email) ?? []}
+        verifiedEmails={verifiedMembers?.map(m => m.email) ?? []}
+        unverifiedEmails={unverifiedMembers?.map(m => m.email) ?? []}
+      />
     </>
   )
 }

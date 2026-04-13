@@ -4,8 +4,8 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 
-export function AdminMemberActions({ memberId, isVerified, isAdmin }: {
-  memberId: string; isVerified: boolean; isAdmin: boolean
+export function AdminMemberActions({ memberId, memberName, isVerified, isAdmin }: {
+  memberId: string; memberName: string; isVerified: boolean; isAdmin: boolean
 }) {
   const router = useRouter()
 
@@ -23,6 +23,17 @@ export function AdminMemberActions({ memberId, isVerified, isAdmin }: {
     router.refresh()
   }
 
+  async function deleteMember() {
+    if (!confirm(`Are you sure you want to delete ${memberName}?\n\nThis will permanently remove their profile and all check-in history. This cannot be undone.`)) return
+    if (!confirm(`Really delete ${memberName}? Last chance.`)) return
+
+    const supabase = createClient()
+    await supabase.from('check_ins').delete().eq('member_id', memberId)
+    await supabase.from('profiles').delete().eq('id', memberId)
+    toast.success('Member deleted')
+    router.refresh()
+  }
+
   return (
     <span style={{ fontSize: 11 }}>
       <a onClick={toggleVerified} style={{ cursor: 'pointer' }}>
@@ -31,6 +42,10 @@ export function AdminMemberActions({ memberId, isVerified, isAdmin }: {
       {' | '}
       <a onClick={toggleAdmin} style={{ cursor: 'pointer' }}>
         {isAdmin ? 'remove admin' : 'make admin'}
+      </a>
+      {' | '}
+      <a onClick={deleteMember} style={{ cursor: 'pointer', color: '#a52a2a' }}>
+        delete
       </a>
     </span>
   )

@@ -5,6 +5,8 @@ import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Profile } from '@/types/database'
 
+const GATED_LINKS = new Set(['/directory', '/resources'])
+
 const NAV_LINKS = [
   { href: '/dashboard', label: 'home' },
   { href: '/directory', label: 'directory' },
@@ -38,21 +40,30 @@ export function Nav({ profile }: { profile: Profile }) {
                 </Link>
               </b>
               {' | '}
-              {NAV_LINKS.map(({ href, label }, i) => (
-                <span key={href}>
-                  {i > 0 && ' | '}
-                  <Link
-                    href={href}
-                    style={{
-                      color: '#000',
-                      fontWeight: pathname.startsWith(href) ? 'bold' : 'normal',
-                      textDecoration: pathname.startsWith(href) ? 'none' : 'underline',
-                    }}
-                  >
-                    {label}
-                  </Link>
-                </span>
-              ))}
+              {NAV_LINKS.map(({ href, label }, i) => {
+                const locked = GATED_LINKS.has(href) && !profile.is_verified
+                return (
+                  <span key={href}>
+                    {i > 0 && ' | '}
+                    {locked ? (
+                      <span style={{ color: '#999' }} title="Attend a meeting to unlock">
+                        {label}
+                      </span>
+                    ) : (
+                      <Link
+                        href={href}
+                        style={{
+                          color: '#000',
+                          fontWeight: pathname.startsWith(href) ? 'bold' : 'normal',
+                          textDecoration: pathname.startsWith(href) ? 'none' : 'underline',
+                        }}
+                      >
+                        {label}
+                      </Link>
+                    )}
+                  </span>
+                )
+              })}
               {profile.is_admin && (
                 <>
                   {' | '}
