@@ -1,31 +1,76 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #0a0a0a;
-  --muted: #f4f4f5;
-  --muted-foreground: #71717a;
-  --border: #e4e4e7;
-  --ring: #0a0a0a;
-}
-
 * {
   box-sizing: border-box;
-  padding: 0;
   margin: 0;
+  padding: 0;
 }
 
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
-  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
-  background: var(--background);
-  color: var(--foreground);
-  -webkit-font-smoothing: antialiased;
+html, body {
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #000;
+  background: #f5f5ed;
 }
 
 a {
-  color: inherit;
-  text-decoration: none;
+  color: #0000ee;
+  text-decoration: underline;
+}
+
+a:visited {
+  color: #551a8b;
+}
+
+a:hover {
+  color: #ff6600;
+}
+
+input, select, textarea, button {
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  font-size: 13px;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="url"],
+input[type="search"],
+input[type="datetime-local"],
+select,
+textarea {
+  border: 1px solid #999;
+  padding: 3px 5px;
+  background: #fff;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: 1px solid #000;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid #ccc;
+  margin: 12px 0;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+table th, table td {
+  border: 1px solid #ccc;
+  padding: 4px 8px;
+  text-align: left;
+  font-size: 12px;
+}
+
+table th {
+  background: #e8e8df;
+  font-weight: bold;
+}
+
+table tr:hover {
+  background: #ffffcc;
 }

@@ -1,36 +1,31 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { MemberCard } from '@/components/member-card'
 import { Profile } from '@/types/database'
+
+const STAGE_LABELS: Record<string, string> = {
+  no_idea: 'exploring', idea: 'ideating', prototype: 'building', launched: 'launched',
+}
 
 export default async function DirectoryPage({
   searchParams,
 }: {
-  searchParams: Promise<{ stage?: string; area?: string; q?: string }>
+  searchParams: Promise<{ stage?: string; q?: string }>
 }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
-  const { data: me } = await supabase
-    .from('profiles')
-    .select('is_verified')
-    .eq('id', user.id)
-    .single()
-
-  if (!me?.is_verified) {
-    redirect('/dashboard')
-  }
+  const { data: me } = await supabase.from('profiles').select('is_verified').eq('id', user.id).single()
+  if (!me?.is_verified) redirect('/dashboard')
 
   const params = await searchParams
   let query = supabase
     .from('profiles')
     .select('*')
     .eq('onboarding_complete', true)
-    .order('created_at', { ascending: false })
+    .order('full_name', { ascending: true })
 
   if (params.stage) query = query.eq('build_stage', params.stage)
-  if (params.area) query = query.eq('interest_area', params.area)
 
   const { data: members } = await query as { data: Profile[] | null }
 
@@ -40,78 +35,76 @@ export default async function DirectoryPage({
     return (
       m.full_name?.toLowerCase().includes(q) ||
       m.project_name?.toLowerCase().includes(q) ||
-      m.concentration?.toLowerCase().includes(q) ||
-      m.interest_area?.toLowerCase().includes(q)
+      m.concentration?.toLowerCase().includes(q)
     )
   }) ?? []
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-end justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Directory</h1>
-          <p className="text-sm text-zinc-400 mt-1">{filtered.length} members</p>
-        </div>
-      </div>
+    <>
+      <p><b>Member Directory</b> ({filtered.length} members)</p>
+      <hr />
 
-      <DirectoryFilters currentStage={params.stage} currentArea={params.area} q={params.q} />
+      <form method="get" style={{ marginBottom: 12 }}>
+        <input name="q" defaultValue={params.q} placeholder="search..." style={{ width: 200, marginRight: 4 }} />
+        <select name="stage" defaultValue={params.stage ?? ''} style={{ marginRight: 4 }}>
+          <option value="">all stages</option>
+          <option value="no_idea">exploring</option>
+          <option value="idea">ideating</option>
+          <option value="prototype">building</option>
+          <option value="launched">launched</option>
+        </select>
+        <button type="submit" style={{ background: '#e8e8df', border: '1px solid #999', padding: '2px 10px', cursor: 'pointer' }}>
+          go
+        </button>
+        {(params.stage || params.q) && (
+          <>
+            {' '}
+            <a href="/directory" style={{ fontSize: 11 }}>clear</a>
+          </>
+        )}
+      </form>
 
       {filtered.length === 0 ? (
-        <p className="text-sm text-zinc-400">No members match your filters.</p>
+        <p style={{ color: '#828282', fontSize: 12 }}>No members match your search.</p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map(m => (
-            <MemberCard key={m.id} member={m} isMe={m.id === user.id} />
-          ))}
-        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>name</th>
+              <th>year</th>
+              <th>concentration</th>
+              <th>interest</th>
+              <th>stage</th>
+              <th>project</th>
+              <th>contact</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map(m => (
+              <tr key={m.id}>
+                <td style={{ fontWeight: m.id === user.id ? 'bold' : 'normal' }}>
+                  {m.full_name ?? '—'}
+                  {m.id === user.id && <span style={{ color: '#828282' }}> (you)</span>}
+                </td>
+                <td>{m.class_year ? `'${String(m.class_year).slice(2)}` : '—'}</td>
+                <td>{m.concentration ?? '—'}</td>
+                <td style={{ fontSize: 11 }}>{m.interest_area ?? '—'}</td>
+                <td style={{ fontSize: 11 }}>{m.build_stage ? STAGE_LABELS[m.build_stage] : '—'}</td>
+                <td>
+                  {m.project_name ? (
+                    m.project_url ? (
+                      <a href={m.project_url} target="_blank" rel="noopener noreferrer">{m.project_name}</a>
+                    ) : m.project_name
+                  ) : '—'}
+                </td>
+                <td style={{ fontSize: 11 }}>
+                  <a href={`mailto:${m.email}`}>email</a>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       )}
-    </div>
-  )
-}
-
-function DirectoryFilters({
-  currentStage,
-  currentArea,
-  q,
-}: {
-  currentStage?: string
-  currentArea?: string
-  q?: string
-}) {
-  const stages = [
-    { value: '', label: 'All stages' },
-    { value: 'no_idea', label: 'Exploring' },
-    { value: 'idea', label: 'Ideating' },
-    { value: 'prototype', label: 'Building' },
-    { value: 'launched', label: 'Launched' },
-  ]
-
-  return (
-    <form className="flex flex-wrap gap-2 items-center" method="get">
-      <input
-        name="q"
-        defaultValue={q}
-        placeholder="Search members..."
-        className="text-sm border border-zinc-200 rounded-md px-3 py-1.5 w-44 outline-none focus:ring-1 focus:ring-zinc-900"
-      />
-      <select
-        name="stage"
-        defaultValue={currentStage ?? ''}
-        className="text-sm border border-zinc-200 rounded-md px-3 py-1.5 outline-none focus:ring-1 focus:ring-zinc-900 bg-white"
-      >
-        {stages.map(s => (
-          <option key={s.value} value={s.value}>{s.label}</option>
-        ))}
-      </select>
-      <button
-        type="submit"
-        className="text-sm px-3 py-1.5 bg-zinc-900 text-white rounded-md hover:bg-zinc-700"
-      >
-        Filter
-      </button>
-      {(currentStage || currentArea || q) && (
-        <a href="/directory" className="text-xs text-zinc-400 hover:text-zinc-700">Clear</a>
-      )}
-    </form>
+    </>
   )
 }

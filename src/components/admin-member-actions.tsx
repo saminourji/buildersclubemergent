@@ -3,21 +3,11 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 
 export function AdminMemberActions({
-  memberId,
-  isVerified,
-  isAdmin,
+  memberId, isVerified, isAdmin,
 }: {
-  memberId: string
-  isVerified: boolean
-  isAdmin: boolean
+  memberId: string; isVerified: boolean; isAdmin: boolean
 }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -30,33 +20,32 @@ export function AdminMemberActions({
       body: JSON.stringify({ memberId, action: type }),
     })
     const data = await res.json()
-    if (res.ok) {
-      toast.success(data.message)
-      router.refresh()
-    } else {
-      toast.error(data.error ?? 'Action failed')
-    }
+    if (res.ok) { toast.success(data.message); router.refresh() }
+    else toast.error(data.error ?? 'Failed')
     setLoading(false)
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger className="text-xs text-zinc-400 hover:text-zinc-700 px-2" disabled={loading}>
-        ···
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => action(isVerified ? 'unverify' : 'verify')}>
-          {isVerified ? 'Remove verification' : 'Mark as verified'}
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => action('manual-checkin')}>
-          Add manual check-in
-        </DropdownMenuItem>
-        {!isAdmin && (
-          <DropdownMenuItem onClick={() => action('make-admin')}>
-            Make admin
-          </DropdownMenuItem>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <span style={{ fontSize: 11, whiteSpace: 'nowrap' }}>
+      {loading ? '...' : (
+        <>
+          <a onClick={() => action(isVerified ? 'unverify' : 'verify')} style={{ cursor: 'pointer' }}>
+            {isVerified ? 'unverify' : 'verify'}
+          </a>
+          {' | '}
+          <a onClick={() => action('manual-checkin')} style={{ cursor: 'pointer' }}>
+            +checkin
+          </a>
+          {!isAdmin && (
+            <>
+              {' | '}
+              <a onClick={() => action('make-admin')} style={{ cursor: 'pointer' }}>
+                make admin
+              </a>
+            </>
+          )}
+        </>
+      )}
+    </span>
   )
 }

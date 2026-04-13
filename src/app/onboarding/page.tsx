@@ -3,43 +3,23 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { toast } from 'sonner'
 
 const INTEREST_AREAS = [
-  'Software / Apps',
-  'Hardware / Devices',
-  'Biotech / Life Sciences',
-  'Climate / Energy',
-  'AI / ML',
-  'Consumer',
-  'Enterprise / B2B',
-  'Social Impact',
-  'Creative / Media',
-  'Other',
+  'Software / Apps', 'Hardware / Devices', 'Biotech / Life Sciences',
+  'Climate / Energy', 'AI / ML', 'Consumer', 'Enterprise / B2B',
+  'Social Impact', 'Creative / Media', 'Other',
 ]
 
 const RESOURCE_OPTIONS = [
-  'Funding & grants',
-  'Co-founder matching',
-  'Mentorship',
-  'Office hours w/ founders',
-  'Guest speaker sessions',
-  'Technical workshops',
-  'Demo opportunities',
-  'Community & networking',
+  'Funding & grants', 'Co-founder matching', 'Mentorship',
+  'Office hours w/ founders', 'Guest speaker sessions',
+  'Technical workshops', 'Demo opportunities', 'Community & networking',
 ]
-
-const STEPS = ['About you', 'Your build', 'Resources']
 
 export default function OnboardingPage() {
   const router = useRouter()
-  const [step, setStep] = useState(0)
   const [loading, setLoading] = useState(false)
-
   const [form, setForm] = useState({
     full_name: '',
     class_year: '',
@@ -51,8 +31,8 @@ export default function OnboardingPage() {
     resource_preferences: [] as string[],
   })
 
-  function update(field: string, value: string | null) {
-    setForm(f => ({ ...f, [field]: value ?? '' }))
+  function update(field: string, value: string) {
+    setForm(f => ({ ...f, [field]: value }))
   }
 
   function toggleResource(r: string) {
@@ -64,13 +44,17 @@ export default function OnboardingPage() {
     }))
   }
 
-  async function handleSubmit() {
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!form.full_name) { toast.error('Name is required'); return }
+    if (!form.build_stage) { toast.error('Select your build stage'); return }
+
     setLoading(true)
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/login'); return }
 
-    const profileData = {
+    const { error } = await supabase.from('profiles').upsert({
       id: user.id,
       email: user.email ?? '',
       full_name: form.full_name || null,
@@ -82,144 +66,133 @@ export default function OnboardingPage() {
       project_url: form.project_url || null,
       resource_preferences: form.resource_preferences,
       onboarding_complete: true,
-    }
-
-    // Use upsert so it works whether or not the profile row already exists
-    const { error } = await supabase
-      .from('profiles')
-      .upsert(profileData, { onConflict: 'id' })
+    }, { onConflict: 'id' })
 
     if (error) {
-      console.error('Onboarding save error:', error)
-      toast.error(`Something went wrong: ${error.message}`)
+      toast.error(`Error: ${error.message}`)
       setLoading(false)
       return
     }
-
     router.push('/dashboard')
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md space-y-8">
-        <div className="space-y-1">
-          <div className="flex gap-1 mb-6">
-            {STEPS.map((s, i) => (
-              <div
-                key={s}
-                className={`h-1 flex-1 rounded-full transition-colors ${i <= step ? 'bg-zinc-900' : 'bg-zinc-200'}`}
-              />
-            ))}
-          </div>
-          <p className="text-xs text-zinc-400 uppercase tracking-widest">{`Step ${step + 1} of ${STEPS.length}`}</p>
-          <h1 className="text-xl font-semibold">{STEPS[step]}</h1>
-        </div>
+    <div style={{ maxWidth: 520, margin: '40px auto', padding: '0 16px' }}>
+      <table style={{ border: '1px solid #ccc', width: '100%', background: '#fff' }}>
+        <tbody>
+          <tr>
+            <td style={{ background: '#ff6600', padding: '4px 8px', border: 'none' }}>
+              <b style={{ color: '#000' }}>New Member Registration</b>
+            </td>
+          </tr>
+          <tr>
+            <td style={{ padding: '16px', border: 'none' }}>
+              <form onSubmit={handleSubmit}>
+                <p style={{ marginBottom: 12, fontSize: 12, color: '#828282' }}>
+                  Tell us about yourself. All fields optional except name and build stage.
+                </p>
 
-        {step === 0 && (
-          <div className="space-y-4">
-            <div className="space-y-1.5">
-              <Label>Full name</Label>
-              <Input value={form.full_name} onChange={e => update('full_name', e.target.value)} placeholder="Jane Smith" />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Class year</Label>
-              <Select value={form.class_year} onValueChange={v => update('class_year', v)}>
-                <SelectTrigger><SelectValue placeholder="Select year" /></SelectTrigger>
-                <SelectContent>
-                  {[2025, 2026, 2027, 2028, 2029].map(y => (
-                    <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+                <table style={{ border: 'none', width: '100%' }}>
+                  <tbody>
+                    <Row label="Name *">
+                      <input type="text" value={form.full_name} onChange={e => update('full_name', e.target.value)} style={{ width: '100%' }} />
+                    </Row>
+                    <Row label="Class year">
+                      <select value={form.class_year} onChange={e => update('class_year', e.target.value)} style={{ width: '100%' }}>
+                        <option value="">--</option>
+                        {[2025, 2026, 2027, 2028, 2029].map(y => <option key={y} value={String(y)}>{y}</option>)}
+                      </select>
+                    </Row>
+                    <Row label="Concentration">
+                      <input type="text" value={form.concentration} onChange={e => update('concentration', e.target.value)} style={{ width: '100%' }} />
+                    </Row>
+                    <Row label="Interest area">
+                      <select value={form.interest_area} onChange={e => update('interest_area', e.target.value)} style={{ width: '100%' }}>
+                        <option value="">--</option>
+                        {INTEREST_AREAS.map(a => <option key={a} value={a}>{a}</option>)}
+                      </select>
+                    </Row>
+                    <Row label="Build stage *">
+                      <select value={form.build_stage} onChange={e => update('build_stage', e.target.value)} style={{ width: '100%' }}>
+                        <option value="">--</option>
+                        <option value="no_idea">No idea yet — exploring</option>
+                        <option value="idea">Have an idea</option>
+                        <option value="prototype">Building a prototype</option>
+                        <option value="launched">Launched something</option>
+                      </select>
+                    </Row>
+                    {form.build_stage && form.build_stage !== 'no_idea' && (
+                      <>
+                        <Row label="Project name">
+                          <input type="text" value={form.project_name} onChange={e => update('project_name', e.target.value)} style={{ width: '100%' }} />
+                        </Row>
+                        <Row label="Project URL">
+                          <input type="url" value={form.project_url} onChange={e => update('project_url', e.target.value)} style={{ width: '100%' }} placeholder="https://" />
+                        </Row>
+                      </>
+                    )}
+                  </tbody>
+                </table>
+
+                <hr />
+
+                <p style={{ marginBottom: 8, fontSize: 12 }}><b>What resources do you want?</b> (click to select)</p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                  {RESOURCE_OPTIONS.map(r => (
+                    <span
+                      key={r}
+                      onClick={() => toggleResource(r)}
+                      style={{
+                        display: 'inline-block',
+                        padding: '2px 8px',
+                        border: '1px solid #999',
+                        background: form.resource_preferences.includes(r) ? '#ff6600' : '#fff',
+                        color: form.resource_preferences.includes(r) ? '#000' : '#666',
+                        fontWeight: form.resource_preferences.includes(r) ? 'bold' : 'normal',
+                        cursor: 'pointer',
+                        fontSize: 12,
+                      }}
+                    >
+                      {r}
+                    </span>
                   ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label>Concentration</Label>
-              <Input value={form.concentration} onChange={e => update('concentration', e.target.value)} placeholder="Computer Science" />
-            </div>
-            <Button className="w-full bg-zinc-900 text-white hover:bg-zinc-700" onClick={() => setStep(1)} disabled={!form.full_name}>
-              Continue
-            </Button>
-          </div>
-        )}
-
-        {step === 1 && (
-          <div className="space-y-4">
-            <div className="space-y-1.5">
-              <Label>Area of interest</Label>
-              <Select value={form.interest_area} onValueChange={v => update('interest_area', v)}>
-                <SelectTrigger><SelectValue placeholder="Select area" /></SelectTrigger>
-                <SelectContent>
-                  {INTEREST_AREAS.map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label>Where are you in your build?</Label>
-              <Select value={form.build_stage} onValueChange={v => update('build_stage', v)}>
-                <SelectTrigger><SelectValue placeholder="Select stage" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="no_idea">No idea yet</SelectItem>
-                  <SelectItem value="idea">Have an idea</SelectItem>
-                  <SelectItem value="prototype">Building a prototype</SelectItem>
-                  <SelectItem value="launched">Launched</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            {form.build_stage && form.build_stage !== 'no_idea' && (
-              <>
-                <div className="space-y-1.5">
-                  <Label>Project name <span className="text-zinc-400">(optional)</span></Label>
-                  <Input value={form.project_name} onChange={e => update('project_name', e.target.value)} placeholder="My Startup" />
                 </div>
-                <div className="space-y-1.5">
-                  <Label>Website / link <span className="text-zinc-400">(optional)</span></Label>
-                  <Input value={form.project_url} onChange={e => update('project_url', e.target.value)} placeholder="https://" type="url" />
-                </div>
-              </>
-            )}
-            <div className="flex gap-2">
-              <Button variant="outline" className="flex-1" onClick={() => setStep(0)}>Back</Button>
-              <Button className="flex-1 bg-zinc-900 text-white hover:bg-zinc-700" onClick={() => setStep(2)} disabled={!form.build_stage}>
-                Continue
-              </Button>
-            </div>
-          </div>
-        )}
 
-        {step === 2 && (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>What would you like from Builders Club? <span className="text-zinc-400">(select all that apply)</span></Label>
-              <div className="grid grid-cols-2 gap-2 pt-1">
-                {RESOURCE_OPTIONS.map(r => (
-                  <button
-                    key={r}
-                    type="button"
-                    onClick={() => toggleResource(r)}
-                    className={`text-left text-sm px-3 py-2 rounded-md border transition-colors ${
-                      form.resource_preferences.includes(r)
-                        ? 'border-zinc-900 bg-zinc-900 text-white'
-                        : 'border-zinc-200 text-zinc-700 hover:border-zinc-400'
-                    }`}
-                  >
-                    {r}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="flex gap-2 pt-2">
-              <Button variant="outline" className="flex-1" onClick={() => setStep(1)}>Back</Button>
-              <Button
-                className="flex-1 bg-zinc-900 text-white hover:bg-zinc-700"
-                onClick={handleSubmit}
-                disabled={loading}
-              >
-                {loading ? 'Saving...' : 'Finish setup'}
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
+                <hr />
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  style={{
+                    background: '#ff6600',
+                    color: '#000',
+                    border: '1px solid #cc5200',
+                    padding: '6px 16px',
+                    cursor: 'pointer',
+                    fontWeight: 'bold',
+                    fontSize: 13,
+                  }}
+                >
+                  {loading ? 'saving...' : 'submit'}
+                </button>
+              </form>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
+  )
+}
+
+function Row({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <tr style={{ background: 'transparent' }}>
+      <td style={{ border: 'none', padding: '4px 0', width: 120, verticalAlign: 'top', fontSize: 12, color: '#666' }}>
+        {label}:
+      </td>
+      <td style={{ border: 'none', padding: '4px 0' }}>
+        {children}
+      </td>
+    </tr>
   )
 }

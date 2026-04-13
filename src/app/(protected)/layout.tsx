@@ -15,16 +15,17 @@ export default async function ProtectedLayout({ children }: { children: React.Re
     .eq('id', user.id)
     .single()
 
-  // No profile at all means the auth callback didn't finish — send to onboarding
-  // which will upsert the profile row
   if (!profile || !profile.onboarding_complete) redirect('/onboarding')
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <>
       <Nav profile={profile as Profile} />
-      <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-8">
+      <div style={{ maxWidth: 780, margin: '0 auto', padding: '12px 16px' }}>
         {children}
-      </main>
-    </div>
+      </div>
+      <div style={{ textAlign: 'center', padding: '20px 0', fontSize: '11px', color: '#828282' }}>
+        builders club &mdash; emergent @ brown &mdash; est. 2025
+      </div>
+    </>
   )
 }

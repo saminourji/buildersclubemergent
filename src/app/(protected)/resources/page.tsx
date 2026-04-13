@@ -2,28 +2,19 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
 const RESOURCES = [
-  {
-    category: 'Community',
-    items: [
-      { title: 'Builders Club Slack', description: 'Join the community workspace', link: 'https://join.slack.com/your-workspace', cta: 'Join Slack' },
-      { title: 'Member Directory', description: 'Find collaborators and co-founders', link: '/directory', cta: 'Browse' },
-    ],
-  },
-  {
-    category: 'Funding',
-    items: [
-      { title: 'Brown UTRA', description: 'Undergraduate teaching and research awards', link: 'https://www.brown.edu/academics/college/fellowships/utra/', cta: 'Apply' },
-      { title: 'Nelson Center Grants', description: 'Nelson Center for Entrepreneurship funding', link: 'https://entrepreneurship.brown.edu/', cta: 'Learn more' },
-      { title: 'YC Application Guide', description: 'Tips and resources for applying to Y Combinator', link: 'https://www.ycombinator.com/apply/', cta: 'View' },
-    ],
-  },
-  {
-    category: 'Learning',
-    items: [
-      { title: 'Paul Graham Essays', description: 'Essential reading for builders', link: 'http://paulgraham.com/articles.html', cta: 'Read' },
-      { title: 'Stripe Atlas Guides', description: 'Comprehensive startup guides', link: 'https://stripe.com/atlas/guides', cta: 'Read' },
-    ],
-  },
+  { category: 'Community', items: [
+    { title: 'Builders Club Slack', url: '#', desc: 'Join the community workspace' },
+    { title: 'Member Directory', url: '/directory', desc: 'Find collaborators and co-founders' },
+  ]},
+  { category: 'Funding', items: [
+    { title: 'Brown UTRA', url: 'https://www.brown.edu/academics/college/fellowships/utra/', desc: 'Undergraduate teaching and research awards' },
+    { title: 'Nelson Center Grants', url: 'https://entrepreneurship.brown.edu/', desc: 'Nelson Center for Entrepreneurship funding' },
+    { title: 'YC Application Guide', url: 'https://www.ycombinator.com/apply/', desc: 'How to apply to Y Combinator' },
+  ]},
+  { category: 'Reading', items: [
+    { title: 'Paul Graham Essays', url: 'http://paulgraham.com/articles.html', desc: 'Essential reading for builders' },
+    { title: 'Stripe Atlas Guides', url: 'https://stripe.com/atlas/guides', desc: 'Comprehensive startup guides' },
+  ]},
 ]
 
 export default async function ResourcesPage() {
@@ -31,48 +22,30 @@ export default async function ResourcesPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('is_verified')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile?.is_verified) {
-    redirect('/dashboard')
-  }
+  const { data: profile } = await supabase.from('profiles').select('is_verified').eq('id', user.id).single()
+  if (!profile?.is_verified) redirect('/dashboard')
 
   return (
-    <div className="space-y-10">
-      <div>
-        <h1 className="text-2xl font-semibold">Resources</h1>
-        <p className="text-sm text-zinc-400 mt-1">Curated for Builders Club members</p>
-      </div>
+    <>
+      <p><b>Resources</b></p>
+      <p style={{ fontSize: 12, color: '#828282' }}>Curated for Builders Club members.</p>
+      <hr />
 
       {RESOURCES.map(section => (
-        <div key={section.category} className="space-y-3">
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-zinc-400">
-            {section.category}
-          </h2>
-          <div className="divide-y divide-zinc-100 border border-zinc-100 rounded-lg overflow-hidden">
+        <div key={section.category} style={{ marginBottom: 16 }}>
+          <p style={{ fontSize: 11, color: '#828282', marginBottom: 4 }}>{section.category.toUpperCase()}</p>
+          <ul style={{ paddingLeft: 20, listStyleType: 'disc' }}>
             {section.items.map(item => (
-              <div key={item.title} className="flex items-center justify-between px-4 py-3">
-                <div>
-                  <p className="text-sm font-medium">{item.title}</p>
-                  <p className="text-xs text-zinc-400">{item.description}</p>
-                </div>
-                <a
-                  href={item.link}
-                  target={item.link.startsWith('http') ? '_blank' : undefined}
-                  rel="noopener noreferrer"
-                  className="text-xs font-medium text-zinc-900 hover:underline shrink-0 ml-4"
-                >
-                  {item.cta} →
+              <li key={item.title} style={{ marginBottom: 4 }}>
+                <a href={item.url} target={item.url.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer">
+                  {item.title}
                 </a>
-              </div>
+                {' '}<span style={{ fontSize: 11, color: '#828282' }}>— {item.desc}</span>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       ))}
-    </div>
+    </>
   )
 }

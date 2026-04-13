@@ -6,67 +6,53 @@ import { QRDisplay } from '@/components/qr-display'
 import { AdminEventToggle } from '@/components/admin-event-toggle'
 import { AdminAgendaManager } from '@/components/admin-agenda-manager'
 
-export default async function AdminEventDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
+export default async function AdminEventDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
 
   const { data: event } = await supabase
-    .from('events')
-    .select('*')
-    .eq('id', id)
-    .single() as { data: Event | null }
-
+    .from('events').select('*').eq('id', id).single() as { data: Event | null }
   if (!event) notFound()
 
   const { data: slots } = await supabase
-    .from('agenda_slots')
-    .select('*')
-    .eq('event_id', id)
+    .from('agenda_slots').select('*').eq('event_id', id)
     .order('slot_order', { ascending: true }) as { data: AgendaSlot[] | null }
 
   const { count: checkinCount } = await supabase
-    .from('check_ins')
-    .select('*', { count: 'exact', head: true })
-    .eq('event_id', id)
+    .from('check_ins').select('*', { count: 'exact', head: true }).eq('event_id', id)
 
   const checkinUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/checkin/${event.qr_token}`
 
   return (
-    <div className="max-w-2xl space-y-8">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-semibold">{event.title}</h1>
-          <p className="text-sm text-zinc-400 mt-0.5">
-            {format(new Date(event.event_date), 'EEEE, MMMM d, yyyy · h:mm a')}
-          </p>
-        </div>
-        <AdminEventToggle eventId={event.id} checkinOpen={event.checkin_open} />
-      </div>
+    <>
+      <p><b>{event.title}</b></p>
+      <p style={{ fontSize: 12, color: '#828282' }}>
+        {format(new Date(event.event_date), 'EEEE, MMMM d, yyyy — h:mm a')}
+      </p>
+      <hr />
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="border border-zinc-100 rounded-lg p-4">
-          <p className="text-xs text-zinc-400 mb-1">Check-ins</p>
-          <p className="text-2xl font-semibold">{checkinCount ?? 0}</p>
-        </div>
-        <div className="border border-zinc-100 rounded-lg p-4">
-          <p className="text-xs text-zinc-400 mb-1">Status</p>
-          <p className="text-lg font-semibold">{event.checkin_open ? 'Open' : 'Closed'}</p>
-        </div>
-      </div>
+      <table style={{ border: 'none', maxWidth: 300 }}>
+        <tbody>
+          <tr style={{ background: 'transparent' }}>
+            <td style={{ border: 'none', padding: '2px 12px 2px 0', fontSize: 12, color: '#666' }}>check-ins:</td>
+            <td style={{ border: 'none', padding: '2px 0' }}><b>{checkinCount ?? 0}</b></td>
+          </tr>
+          <tr style={{ background: 'transparent' }}>
+            <td style={{ border: 'none', padding: '2px 12px 2px 0', fontSize: 12, color: '#666' }}>status:</td>
+            <td style={{ border: 'none', padding: '2px 0' }}>
+              <AdminEventToggle eventId={event.id} checkinOpen={event.checkin_open} />
+            </td>
+          </tr>
+        </tbody>
+      </table>
 
-      <div className="space-y-3">
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-zinc-400">QR Check-in</h2>
-        <QRDisplay url={checkinUrl} token={event.qr_token} />
-      </div>
+      <hr />
+      <p style={{ fontSize: 11, color: '#828282', marginBottom: 4 }}>QR CHECK-IN</p>
+      <QRDisplay url={checkinUrl} token={event.qr_token} />
 
-      <div className="space-y-3">
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-zinc-400">Agenda</h2>
-        <AdminAgendaManager eventId={event.id} slots={slots ?? []} />
-      </div>
-    </div>
+      <hr />
+      <p style={{ fontSize: 11, color: '#828282', marginBottom: 4 }}>AGENDA</p>
+      <AdminAgendaManager eventId={event.id} slots={slots ?? []} />
+    </>
   )
 }

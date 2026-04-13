@@ -12,44 +12,55 @@ export default async function AdminPage() {
     supabase.from('profiles').select('*', { count: 'exact', head: true }),
     supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('is_verified', true),
     supabase.from('events').select('*', { count: 'exact', head: true }),
-    supabase.from('profiles').select('id, full_name, email, created_at, is_verified').order('created_at', { ascending: false }).limit(5),
+    supabase.from('profiles').select('id, full_name, email, created_at, is_verified').order('created_at', { ascending: false }).limit(10),
   ])
 
   return (
-    <div className="space-y-8">
-      <h1 className="text-2xl font-semibold">Admin overview</h1>
+    <>
+      <p><b>Admin Overview</b></p>
+      <hr />
 
-      <div className="grid grid-cols-3 gap-4">
-        <StatCard label="Total members" value={String(totalMembers ?? 0)} />
-        <StatCard label="Verified members" value={String(verifiedMembers ?? 0)} />
-        <StatCard label="Events" value={String(totalEvents ?? 0)} />
-      </div>
+      <table style={{ border: 'none', maxWidth: 300 }}>
+        <tbody>
+          <tr style={{ background: 'transparent' }}>
+            <td style={{ border: 'none', padding: '2px 12px 2px 0', fontSize: 12, color: '#666' }}>total members:</td>
+            <td style={{ border: 'none', padding: '2px 0' }}><b>{totalMembers ?? 0}</b></td>
+          </tr>
+          <tr style={{ background: 'transparent' }}>
+            <td style={{ border: 'none', padding: '2px 12px 2px 0', fontSize: 12, color: '#666' }}>verified:</td>
+            <td style={{ border: 'none', padding: '2px 0' }}><b>{verifiedMembers ?? 0}</b></td>
+          </tr>
+          <tr style={{ background: 'transparent' }}>
+            <td style={{ border: 'none', padding: '2px 12px 2px 0', fontSize: 12, color: '#666' }}>events:</td>
+            <td style={{ border: 'none', padding: '2px 0' }}><b>{totalEvents ?? 0}</b></td>
+          </tr>
+        </tbody>
+      </table>
 
-      <div className="space-y-3">
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-zinc-400">Recent signups</h2>
-        <div className="divide-y divide-zinc-100 border border-zinc-100 rounded-lg overflow-hidden">
+      <hr />
+      <p style={{ fontSize: 11, color: '#828282', marginBottom: 4 }}>RECENT SIGNUPS</p>
+      <table>
+        <thead>
+          <tr>
+            <th>name</th>
+            <th>email</th>
+            <th>status</th>
+          </tr>
+        </thead>
+        <tbody>
           {recentMembers?.map(m => (
-            <div key={m.id} className="flex items-center justify-between px-4 py-3">
-              <div>
-                <p className="text-sm font-medium">{m.full_name ?? '—'}</p>
-                <p className="text-xs text-zinc-400">{m.email}</p>
-              </div>
-              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${m.is_verified ? 'bg-green-50 text-green-700' : 'bg-zinc-100 text-zinc-500'}`}>
-                {m.is_verified ? 'Verified' : 'Unverified'}
-              </span>
-            </div>
+            <tr key={m.id}>
+              <td>{m.full_name ?? '—'}</td>
+              <td style={{ fontSize: 11 }}>{m.email}</td>
+              <td style={{ fontSize: 11 }}>
+                {m.is_verified
+                  ? <span style={{ color: 'green' }}>[verified]</span>
+                  : <span style={{ color: '#999' }}>[unverified]</span>}
+              </td>
+            </tr>
           ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function StatCard({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="border border-zinc-100 rounded-lg p-4">
-      <p className="text-xs text-zinc-400 mb-1">{label}</p>
-      <p className="text-2xl font-semibold">{value}</p>
-    </div>
+        </tbody>
+      </table>
+    </>
   )
 }

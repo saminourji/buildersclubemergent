@@ -3,20 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 
-export function AdminEventActions({
-  eventId,
-  checkinOpen,
-}: {
-  eventId: string
-  checkinOpen: boolean
-}) {
+export function AdminEventActions({ eventId, checkinOpen }: { eventId: string; checkinOpen: boolean }) {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
@@ -27,26 +15,18 @@ export function AdminEventActions({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ eventId, checkinOpen: !checkinOpen }),
     })
-    const data = await res.json()
-    if (res.ok) {
-      toast.success(checkinOpen ? 'Check-in closed' : 'Check-in opened')
-      router.refresh()
-    } else {
-      toast.error(data.error ?? 'Failed')
-    }
+    if (res.ok) { toast.success(checkinOpen ? 'Closed' : 'Opened'); router.refresh() }
+    else toast.error('Failed')
     setLoading(false)
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger className="text-xs text-zinc-400 hover:text-zinc-700 px-2" disabled={loading}>
-        ···
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={toggle}>
-          {checkinOpen ? 'Close check-in' : 'Open check-in'}
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <span style={{ fontSize: 11 }}>
+      {loading ? '...' : (
+        <a onClick={toggle} style={{ cursor: 'pointer' }}>
+          {checkinOpen ? 'close check-in' : 'open check-in'}
+        </a>
+      )}
+    </span>
   )
 }

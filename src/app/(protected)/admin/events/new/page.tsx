@@ -3,31 +3,20 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
 
 export default function NewEventPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const [form, setForm] = useState({
-    title: '',
-    description: '',
-    event_date: '',
-    checkin_open: false,
-  })
+  const [form, setForm] = useState({ title: '', description: '', event_date: '', checkin_open: false })
 
   function update(field: string, value: string | boolean) {
     setForm(f => ({ ...f, [field]: value }))
   }
 
-  async function handleCreate() {
-    if (!form.title || !form.event_date) {
-      toast.error('Title and date are required')
-      return
-    }
+  async function handleCreate(e: React.FormEvent) {
+    e.preventDefault()
+    if (!form.title || !form.event_date) { toast.error('Title and date required'); return }
     setLoading(true)
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -41,67 +30,53 @@ export default function NewEventPage() {
       created_by: user.id,
     }).select().single()
 
-    if (error) {
-      toast.error('Failed to create event')
-      setLoading(false)
-      return
-    }
-
-    toast.success('Event created')
+    if (error) { toast.error('Failed to create'); setLoading(false); return }
+    toast.success('Created')
     router.push(`/admin/events/${data.id}`)
   }
 
   return (
-    <div className="max-w-lg space-y-6">
-      <h1 className="text-xl font-semibold">New event</h1>
+    <>
+      <p><b>New Event</b></p>
+      <hr />
 
-      <div className="space-y-4">
-        <div className="space-y-1.5">
-          <Label>Title</Label>
-          <Input
-            value={form.title}
-            onChange={e => update('title', e.target.value)}
-            placeholder="Builders Club #12"
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label>Date & time</Label>
-          <Input
-            type="datetime-local"
-            value={form.event_date}
-            onChange={e => update('event_date', e.target.value)}
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label>Description <span className="text-zinc-400">(optional)</span></Label>
-          <Textarea
-            value={form.description}
-            onChange={e => update('description', e.target.value)}
-            placeholder="What's happening this week?"
-            rows={3}
-          />
-        </div>
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={form.checkin_open}
-            onChange={e => update('checkin_open', e.target.checked)}
-            className="w-4 h-4"
-          />
-          <span className="text-sm">Open check-in immediately</span>
-        </label>
-      </div>
+      <form onSubmit={handleCreate}>
+        <table style={{ border: 'none', width: '100%', maxWidth: 500 }}>
+          <tbody>
+            <Row label="title *">
+              <input type="text" value={form.title} onChange={e => update('title', e.target.value)} style={{ width: '100%' }} placeholder="Builders Club #12" />
+            </Row>
+            <Row label="date *">
+              <input type="datetime-local" value={form.event_date} onChange={e => update('event_date', e.target.value)} style={{ width: '100%' }} />
+            </Row>
+            <Row label="description">
+              <textarea value={form.description} onChange={e => update('description', e.target.value)} rows={3} style={{ width: '100%' }} />
+            </Row>
+            <Row label="check-in">
+              <label>
+                <input type="checkbox" checked={form.checkin_open} onChange={e => update('checkin_open', e.target.checked)} />
+                {' '}open immediately
+              </label>
+            </Row>
+          </tbody>
+        </table>
 
-      <div className="flex gap-2">
-        <Button variant="outline" onClick={() => router.back()}>Cancel</Button>
-        <Button
-          onClick={handleCreate}
-          disabled={loading}
-          className="bg-zinc-900 text-white hover:bg-zinc-700"
-        >
-          {loading ? 'Creating...' : 'Create event'}
-        </Button>
-      </div>
-    </div>
+        <hr />
+        <button type="submit" disabled={loading} style={{ background: '#ff6600', color: '#000', border: '1px solid #cc5200', padding: '6px 16px', cursor: 'pointer', fontWeight: 'bold' }}>
+          {loading ? 'creating...' : 'create event'}
+        </button>
+        {' '}
+        <a onClick={() => router.back()} style={{ cursor: 'pointer', fontSize: 12 }}>cancel</a>
+      </form>
+    </>
+  )
+}
+
+function Row({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <tr style={{ background: 'transparent' }}>
+      <td style={{ border: 'none', padding: '4px 0', width: 110, verticalAlign: 'top', fontSize: 12, color: '#666' }}>{label}:</td>
+      <td style={{ border: 'none', padding: '4px 0' }}>{children}</td>
+    </tr>
   )
 }
