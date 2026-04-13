@@ -37,8 +37,8 @@ function LoginContent() {
                 Join us at our next meeting!
               </p>
               <p style={{ fontSize: 11, color: '#828282', marginBottom: 10 }}>
-                Tuesdays, 7–9 PM · Nelson Center, 4th floor · Run by{' '}
-                <a href="https://emergentconference.org" target="_blank" rel="noopener noreferrer">Emergent</a> (A.J., Jameel, Rishi, and Sami).
+                Tuesdays, 7–9 PM · Nelson Center, 4th floor<br />
+                Run by <a href="https://emergentconference.org" target="_blank" rel="noopener noreferrer">Emergent</a> (A.J., Jameel, Rishi, and Sami).
               </p>
               <hr />
               <p style={{ marginBottom: 10, marginTop: 10, fontSize: 12 }}>
