@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Profile } from '@/types/database'
 import { formatClassYear } from '@/lib/helpers'
+import { INTEREST_AREAS } from '@/lib/constants'
 
 const STAGE_LABELS: Record<string, string> = {
   no_idea: 'exploring', idea: 'ideating', prototype: 'building', launched: 'launched',
@@ -16,8 +17,10 @@ export default async function DirectoryPage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
-  const { data: me } = await supabase.from('profiles').select('is_verified').eq('id', user.id).single()
+  const { data: me } = await supabase.from('profiles').select('is_verified, interest_area').eq('id', user.id).single()
   if (!me?.is_verified) redirect('/dashboard')
+
+  const myInterests = new Set<string>(me?.interest_area ?? [])
 
   const params = await searchParams
   let query = supabase.from('profiles').select('*').eq('onboarding_complete', true).eq('archived', false).order('full_name', { ascending: true })
@@ -70,25 +73,40 @@ export default async function DirectoryPage({
             </tr>
           </thead>
           <tbody>
-            {filtered.map(m => (
-              <tr key={m.id}>
-                <td style={{ fontWeight: m.id === user.id ? 'bold' : 'normal' }}>
-                  {m.full_name ?? '—'}
-                  {m.id === user.id && <span style={{ color: '#828282' }}> (you)</span>}
-                </td>
-                <td>{formatClassYear(m.class_year)}</td>
-                <td>{m.concentration ?? '—'}</td>
-                <td style={{ fontSize: 11 }}>{m.interest_area?.join(', ') || '—'}</td>
-                <td style={{ fontSize: 11 }}>{m.build_stage ? STAGE_LABELS[m.build_stage] : '—'}</td>
-                <td>
-                  {m.project_name ? (
-                    m.project_url ? <a href={m.project_url} target="_blank" rel="noopener noreferrer">{m.project_name}</a> : m.project_name
-                  ) : '—'}
-                </td>
-                <td style={{ fontSize: 11 }}>{m.phone ?? '—'}</td>
-                <td style={{ fontSize: 11 }}><a href={`mailto:${m.email}`}>email</a></td>
-              </tr>
-            ))}
+            {filtered.map(m => {
+              // Sort interests in canonical INTEREST_AREAS order
+              const sortedInterests = INTEREST_AREAS.filter(a => m.interest_area?.includes(a))
+              return (
+                <tr key={m.id}>
+                  <td style={{ fontWeight: m.id === user.id ? 'bold' : 'normal' }}>
+                    {m.full_name ?? '—'}
+                    {m.id === user.id && <span style={{ color: '#828282' }}> (you)</span>}
+                  </td>
+                  <td>{formatClassYear(m.class_year)}</td>
+                  <td>{m.concentration ?? '—'}</td>
+                  <td style={{ fontSize: 11 }}>
+                    {sortedInterests.length === 0 ? '—' : sortedInterests.map((interest, i) => (
+                      <span key={interest}>
+                        {i > 0 && ', '}
+                        <span style={
+                          myInterests.has(interest) && m.id !== user.id
+                            ? { background: '#d4e6f1', fontWeight: 'bold' }
+                            : {}
+                        }>{interest}</span>
+                      </span>
+                    ))}
+                  </td>
+                  <td style={{ fontSize: 11 }}>{m.build_stage ? STAGE_LABELS[m.build_stage] : '—'}</td>
+                  <td>
+                    {m.project_name ? (
+                      m.project_url ? <a href={m.project_url} target="_blank" rel="noopener noreferrer">{m.project_name}</a> : m.project_name
+                    ) : '—'}
+                  </td>
+                  <td style={{ fontSize: 11 }}>{m.phone ?? '—'}</td>
+                  <td style={{ fontSize: 11 }}><a href={`mailto:${m.email}`}>email</a></td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       )}

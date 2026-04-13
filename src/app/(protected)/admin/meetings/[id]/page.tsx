@@ -6,6 +6,7 @@ import { CheckinCodeDisplay } from '@/components/checkin-code-display'
 import { AdminEventToggle } from '@/components/admin-event-toggle'
 import { AdminAgendaManager } from '@/components/admin-agenda-manager'
 import { MaxDemosControl } from '@/components/max-demos-control'
+import { AdminAttendanceManager } from '@/components/admin-attendance-manager'
 
 export default async function AdminMeetingDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -19,17 +20,18 @@ export default async function AdminMeetingDetailPage({ params }: { params: Promi
     .from('agenda_slots').select('*').eq('event_id', id)
     .order('slot_order', { ascending: true }) as { data: AgendaSlot[] | null }
 
-  const { count: checkinCount } = await supabase
-    .from('check_ins').select('*', { count: 'exact', head: true }).eq('event_id', id)
-
   const { data: attendeeCheckins } = await supabase
     .from('check_ins').select('member_id').eq('event_id', id)
   const attendeeIds = attendeeCheckins?.map(c => c.member_id) ?? []
-  let attendees: { full_name: string | null; email: string }[] = []
-  if (attendeeIds.length > 0) {
-    const { data } = await supabase.from('profiles').select('full_name, email').in('id', attendeeIds)
-    attendees = data ?? []
-  }
+
+  const { data: allMembersRaw } = await supabase
+    .from('profiles')
+    .select('id, full_name, email')
+    .eq('onboarding_complete', true)
+    .eq('archived', false)
+    .order('full_name', { ascending: true })
+
+  const allMembers = allMembersRaw ?? []
 
   const totalMinutes = (slots ?? []).filter(s => s.approved).reduce((sum, s) => sum + (s.estimated_minutes ?? 5), 0)
 
@@ -43,7 +45,7 @@ export default async function AdminMeetingDetailPage({ params }: { params: Promi
         <tbody>
           <tr style={{ background: 'transparent' }}>
             <td style={{ border: 'none', padding: '2px 12px 2px 0', fontSize: 12, color: '#666' }}>check-ins:</td>
-            <td style={{ border: 'none', padding: '2px 0' }}><b>{checkinCount ?? 0}</b></td>
+            <td style={{ border: 'none', padding: '2px 0' }}><b>{attendeeIds.length}</b></td>
           </tr>
           <tr style={{ background: 'transparent' }}>
             <td style={{ border: 'none', padding: '2px 12px 2px 0', fontSize: 12, color: '#666' }}>status:</td>
@@ -68,17 +70,13 @@ export default async function AdminMeetingDetailPage({ params }: { params: Promi
       <p style={{ fontSize: 11, color: '#828282', marginBottom: 4 }}>AGENDA</p>
       <AdminAgendaManager eventId={event.id} slots={slots ?? []} maxDemos={event.max_demos ?? 3} />
 
-      {attendees.length > 0 && (
-        <>
-          <hr />
-          <p style={{ fontSize: 11, color: '#828282', marginBottom: 4 }}>ATTENDEES ({attendees.length})</p>
-          <ul style={{ paddingLeft: 20, listStyleType: 'disc' }}>
-            {attendees.map((a, i) => (
-              <li key={i} style={{ fontSize: 12 }}>{a.full_name ?? a.email}</li>
-            ))}
-          </ul>
-        </>
-      )}
+      <hr />
+      <p style={{ fontSize: 11, color: '#828282', marginBottom: 4 }}>ATTENDANCE</p>
+      <AdminAttendanceManager
+        eventId={event.id}
+        allMembers={allMembers}
+        attendeeIds={attendeeIds}
+      />
     </>
   )
 }
