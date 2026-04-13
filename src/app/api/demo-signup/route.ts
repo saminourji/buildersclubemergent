@@ -4,8 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 export async function POST(request: NextRequest) {
   const formData = await request.formData()
   const event_id = formData.get('event_id') as string
-  const presenter_id = formData.get('presenter_id') as string
   const title = formData.get('title') as string
+  const description = (formData.get('description') as string) || null
 
   if (!event_id || !title) {
     return NextResponse.redirect(new URL('/meetings', request.url))
@@ -18,16 +18,18 @@ export async function POST(request: NextRequest) {
   const { data: profile } = await supabase
     .from('profiles').select('full_name').eq('id', user.id).single()
 
-  // Count existing demo slots
+  const { data: event } = await supabase
+    .from('events').select('max_demos').eq('id', event_id).single()
+  const maxDemos = event?.max_demos ?? 3
+
   const { count } = await supabase
     .from('agenda_slots').select('*', { count: 'exact', head: true })
     .eq('event_id', event_id).eq('slot_type', 'demo')
 
-  if ((count ?? 0) >= 3) {
+  if ((count ?? 0) >= maxDemos) {
     return NextResponse.redirect(new URL(`/meetings/${event_id}`, request.url))
   }
 
-  // Get next slot order
   const { data: maxSlot } = await supabase
     .from('agenda_slots').select('slot_order')
     .eq('event_id', event_id)
@@ -39,10 +41,12 @@ export async function POST(request: NextRequest) {
   await supabase.from('agenda_slots').insert({
     event_id,
     title,
+    description,
     slot_type: 'demo',
     presenter_name: profile?.full_name ?? user.email ?? 'Unknown',
     presenter_id: user.id,
     slot_order: nextOrder,
+    estimated_minutes: 5,
     approved: false,
   })
 

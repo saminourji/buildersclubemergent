@@ -33,6 +33,7 @@ export interface Event {
   event_date: string
   qr_token: string
   checkin_open: boolean
+  max_demos: number
   created_by: string | null
   created_at: string
 }
@@ -52,6 +53,7 @@ export interface AgendaSlot {
   description: string | null
   presenter_name: string | null
   presenter_id: string | null
+  estimated_minutes: number
   slot_order: number
   approved: boolean
   created_at: string

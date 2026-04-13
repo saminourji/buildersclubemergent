@@ -46,6 +46,7 @@ export default async function MeetingPage({ params }: { params: Promise<{ id: st
     attendees = data ?? []
   }
 
+  const maxDemos = event.max_demos ?? 3
   const demoCount = (slots ?? []).filter(s => s.slot_type === 'demo').length
 
   return (
@@ -81,6 +82,7 @@ export default async function MeetingPage({ params }: { params: Promise<{ id: st
                 <th style={{ width: 80 }}>type</th>
                 <th>item</th>
                 <th>presenter</th>
+                <th style={{ width: 50 }}>time</th>
               </tr>
             </thead>
             <tbody>
@@ -89,9 +91,13 @@ export default async function MeetingPage({ params }: { params: Promise<{ id: st
                   <td style={{ fontSize: 10, fontFamily: 'monospace' }}>[{TYPE_LABELS[slot.slot_type]}]</td>
                   <td>
                     {slot.title}
+                    {slot.description && (
+                      <span style={{ display: 'block', fontSize: 11, color: '#666', marginTop: 1 }}>{slot.description}</span>
+                    )}
                     {!slot.approved && <span style={{ color: '#0066cc', fontSize: 10 }}> (pending approval)</span>}
                   </td>
                   <td style={{ fontSize: 11 }}>{slot.presenter_name ?? '—'}</td>
+                  <td style={{ fontSize: 11, color: '#666' }}>{slot.estimated_minutes}m</td>
                 </tr>
               ))}
             </tbody>
@@ -100,10 +106,10 @@ export default async function MeetingPage({ params }: { params: Promise<{ id: st
       )}
 
       <hr />
-      {demoCount < 3 ? (
-        <DemoSignupForm eventId={event.id} userId={user.id} />
+      {demoCount < maxDemos ? (
+        <DemoSignupForm eventId={event.id} userId={user.id} slotsLeft={maxDemos - demoCount} />
       ) : (
-        <p style={{ fontSize: 12, color: '#828282' }}>Demo slots are full (max 3 per meeting).</p>
+        <p style={{ fontSize: 12, color: '#828282' }}>Demo slots are full ({maxDemos} max for this meeting).</p>
       )}
 
       {attendees.length > 0 && (
@@ -123,13 +129,19 @@ export default async function MeetingPage({ params }: { params: Promise<{ id: st
   )
 }
 
-function DemoSignupForm({ eventId, userId }: { eventId: string; userId: string }) {
+function DemoSignupForm({ eventId, userId, slotsLeft }: { eventId: string; userId: string; slotsLeft: number }) {
   return (
     <form action="/api/demo-signup" method="post">
       <input type="hidden" name="event_id" value={eventId} />
       <input type="hidden" name="presenter_id" value={userId} />
-      <p style={{ fontSize: 12, marginBottom: 4 }}><b>Request a demo slot</b> (subject to admin approval, max 3 per meeting)</p>
-      <input name="title" placeholder="what are you presenting?" required style={{ width: 250, marginRight: 4 }} />
+      <p style={{ fontSize: 12, marginBottom: 4 }}>
+        <b>Request a demo slot</b> ({slotsLeft} left)
+      </p>
+      <p style={{ fontSize: 11, color: '#828282', marginBottom: 8 }}>
+        Guideline: no slides, under 5 min. Explain your idea and show a demo.
+      </p>
+      <input name="title" placeholder="title — what are you presenting?" required style={{ width: '100%', maxWidth: 350, marginBottom: 4, display: 'block' }} />
+      <input name="description" placeholder="short description (optional)" style={{ width: '100%', maxWidth: 350, marginBottom: 4, display: 'block' }} />
       <button type="submit" style={{ background: '#d4e6f1', border: '1px solid #b0c4d8', padding: '2px 10px', cursor: 'pointer' }}>
         request slot
       </button>

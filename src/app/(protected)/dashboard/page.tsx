@@ -29,12 +29,14 @@ export default async function DashboardPage() {
   const nextMeeting = upcomingEvents?.[0] ?? null
   let nextMeetingSlots: AgendaSlot[] = []
   let nextDemoCount = 0
+  let nextMaxDemos = 3
   if (nextMeeting) {
     const { data: slots } = await supabase
       .from('agenda_slots').select('*').eq('event_id', nextMeeting.id).eq('approved', true)
       .order('slot_order', { ascending: true })
     nextMeetingSlots = (slots ?? []) as AgendaSlot[]
     nextDemoCount = nextMeetingSlots.filter(s => s.slot_type === 'demo').length
+    nextMaxDemos = nextMeeting.max_demos ?? 3
   }
 
   return (
@@ -98,11 +100,11 @@ export default async function DashboardPage() {
               ) : (
                 <span style={{ color: '#828282' }}>Check-in not opened yet</span>
               )}
-              {nextDemoCount < 3 && (
+              {nextDemoCount < nextMaxDemos && (
                 <>
                   {' · '}
                   <Link href={`/meetings/${nextMeeting.id}`}>request a demo slot</Link>
-                  <span style={{ color: '#828282' }}> ({3 - nextDemoCount} left)</span>
+                  <span style={{ color: '#828282' }}> ({nextMaxDemos - nextDemoCount} left)</span>
                 </>
               )}
             </div>

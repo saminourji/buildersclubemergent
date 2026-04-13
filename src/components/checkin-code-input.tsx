@@ -12,7 +12,7 @@ export function CheckinCodeInput({ eventId, expectedCode }: { eventId: string; e
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (code.trim().toUpperCase() !== expectedCode.toUpperCase()) {
+    if (code.trim() !== expectedCode) {
       toast.error('Wrong code. Try again.')
       return
     }
@@ -37,16 +37,18 @@ export function CheckinCodeInput({ eventId, expectedCode }: { eventId: string; e
     <form onSubmit={handleSubmit} style={{ display: 'inline' }}>
       <input
         type="text"
+        inputMode="numeric"
+        pattern="[0-9]*"
         value={code}
-        onChange={e => setCode(e.target.value.toUpperCase())}
-        placeholder="enter code"
-        maxLength={6}
-        style={{ width: 90, fontFamily: 'monospace', fontSize: 13, letterSpacing: 2, textTransform: 'uppercase', textAlign: 'center' }}
+        onChange={e => setCode(e.target.value.replace(/\D/g, '').slice(0, 5))}
+        placeholder="00000"
+        maxLength={5}
+        style={{ width: 75, fontFamily: 'monospace', fontSize: 14, letterSpacing: 3, textAlign: 'center' }}
       />
       {' '}
       <button
         type="submit"
-        disabled={loading || code.length < 6}
+        disabled={loading || code.length < 5}
         style={{ background: '#87CEEB', color: '#000', border: '1px solid #5BA3C9', padding: '2px 10px', cursor: 'pointer', fontWeight: 'bold', fontSize: 12 }}
       >
         {loading ? '...' : 'check in'}
