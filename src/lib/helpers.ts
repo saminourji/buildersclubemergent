@@ -1,8 +1,7 @@
 export function formatClassYear(classYear: number | null): string {
   if (!classYear) return '—'
   if (classYear === 9999) return 'Grad'
-  // Stored as year * 10, e.g. 2027.5 => 20275
-  if (classYear > 9000) return 'Grad'
+  // Stored as year * 10, e.g. 2027.5 => 20275, 2026 => 20260
   if (classYear > 2100) {
     const year = classYear / 10
     const short = year % 100
