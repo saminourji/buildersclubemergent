@@ -35,7 +35,8 @@ export function Nav({ profile }: { profile: Profile }) {
         {/* Logo */}
         <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: 6, textDecoration: 'none', flexShrink: 0 }}>
           <img src="/logo.png" alt="B" style={{ height: 18, width: 18, imageRendering: 'pixelated' }} />
-          <b style={{ color: '#000', fontSize: 13 }} className="hide-mobile">Builders Club</b>
+              <b style={{ color: '#000', fontSize: 13 }} className="hide-mobile">Builders Club</b>
+              <span style={{ fontSize: 9, color: '#fff', background: '#5BA3C9', padding: '1px 4px', fontWeight: 'bold', letterSpacing: 0.5, verticalAlign: 'middle' }} className="hide-mobile">BETA</span>
         </Link>
 
         {/* Center links — desktop */}

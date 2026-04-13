@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { Profile } from '@/types/database'
 import { formatClassYear } from '@/lib/helpers'
-import { format } from 'date-fns'
+import { formatET } from '@/lib/helpers'
 import { AdminMemberActions } from '@/components/admin-member-actions'
 
 const STAGE_LABELS: Record<string, string> = {
@@ -72,7 +72,7 @@ export default async function AdminMembersPage({
             <ul style={{ paddingLeft: 20, listStyleType: 'disc', marginTop: 8 }}>
               {detailAttendance.map((a, i) => (
                 <li key={i} style={{ fontSize: 12 }}>
-                  {a.event_title} — {format(new Date(a.event_date), 'MMM d, yyyy')}
+                  {a.event_title} — {formatET(a.event_date, 'short')}
                 </li>
               ))}
             </ul>

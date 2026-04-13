@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { format, formatDistanceToNow } from 'date-fns'
+import { formatDistanceToNow } from 'date-fns'
 import { Profile, Event, AgendaSlot } from '@/types/database'
+import { formatET } from '@/lib/helpers'
 
 const STAGE_LABELS: Record<string, string> = {
   no_idea: 'exploring', idea: 'ideating', prototype: 'building', launched: 'launched',
@@ -45,8 +46,19 @@ export default async function DashboardPage() {
         <b>Hey {profile?.full_name?.split(' ')[0] ?? 'builder'}</b>
       </p>
       <p style={{ fontSize: 12, color: '#666', marginTop: 2 }}>
-        Welcome to Builders Club. We meet Tuesdays, 7–9 PM.
+        Welcome to Builders Club. We meet Tuesdays, 7–9 PM · Nelson Center, 4th floor.
       </p>
+
+      <hr />
+      <div style={{ background: '#fff', border: '1px solid #b0c4d8', padding: '10px 12px' }}>
+        <p style={{ fontSize: 11, color: '#828282', marginBottom: 3 }}>ABOUT</p>
+        <p style={{ fontSize: 12 }}>
+          <b>Builders Club</b> is a weekly gathering for Brown students who are building — or want to start.
+          Every Tuesday we meet, share what we&apos;re working on, hear from builders in the room, and push each other.
+          No pitches. No slides. Just builders.
+          Run by <a href="https://emergentconference.org" target="_blank" rel="noopener noreferrer">Emergent</a>.
+        </p>
+      </div>
 
       {!profile?.is_verified && (
         <>
@@ -69,7 +81,7 @@ export default async function DashboardPage() {
               <b><Link href={`/meetings/${nextMeeting.id}`}>{nextMeeting.title}</Link></b>
             </p>
             <p style={{ fontSize: 12, color: '#666' }}>
-              {format(new Date(nextMeeting.event_date), 'EEEE, MMMM d — h:mm a')}
+              {formatET(nextMeeting.event_date, 'full')} · Nelson Center, 4th floor
               {' · '}
               <span style={{ color: '#0066cc' }}>
                 {formatDistanceToNow(new Date(nextMeeting.event_date), { addSuffix: true })}
@@ -137,7 +149,7 @@ export default async function DashboardPage() {
               {upcomingEvents.slice(1).map(event => (
                 <tr key={event.id}>
                   <td style={{ whiteSpace: 'nowrap', fontSize: 11 }}>
-                    {format(new Date(event.event_date), 'MMM d')}
+                    {formatET(event.event_date, 'short')}
                   </td>
                   <td><Link href={`/meetings/${event.id}`}>{event.title}</Link></td>
                 </tr>

@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { format } from 'date-fns'
+import { formatET } from '@/lib/helpers'
 
 export default async function AdminPage() {
   const supabase = await createClient()
@@ -45,7 +45,7 @@ export default async function AdminPage() {
               <tr key={i}>
                 <td>{s.full_name ?? '—'}</td>
                 <td style={{ fontSize: 11 }}>{s.email}</td>
-                <td style={{ fontSize: 11 }}>{format(new Date(s.created_at), 'MMM d')}</td>
+                <td style={{ fontSize: 11 }}>{formatET(s.created_at, 'short')}</td>
               </tr>
             ))}
           </tbody>

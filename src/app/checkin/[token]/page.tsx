@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { CheckinCodeInput } from '@/components/checkin-code-input'
-import { format } from 'date-fns'
+import { formatET } from '@/lib/helpers'
 
 export default async function CheckInPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params
@@ -43,7 +43,7 @@ export default async function CheckInPage({ params }: { params: Promise<{ token:
                   <p style={{ fontSize: 11, color: '#828282' }}>CHECK IN TO</p>
                   <p style={{ fontSize: 16 }}><b>{event.title}</b></p>
                   <p style={{ fontSize: 12, color: '#828282', marginBottom: 12 }}>
-                    {format(new Date(event.event_date), 'EEEE, MMMM d — h:mm a')}
+                    {formatET(event.event_date, 'full')}
                   </p>
                   <CheckinCodeInput eventId={event.id} expectedCode={event.qr_token} />
                 </>

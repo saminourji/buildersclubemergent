@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { format } from 'date-fns'
 import { Event } from '@/types/database'
+import { formatET } from '@/lib/helpers'
 import { AdminEventActions } from '@/components/admin-event-actions'
 
 export default async function AdminMeetingsPage() {
@@ -23,7 +23,7 @@ export default async function AdminMeetingsPage() {
           <tbody>
             {events.map(event => (
               <tr key={event.id}>
-                <td style={{ whiteSpace: 'nowrap', fontSize: 11 }}>{format(new Date(event.event_date), 'MMM d, yyyy')}</td>
+                <td style={{ whiteSpace: 'nowrap', fontSize: 11 }}>{formatET(event.event_date, 'short')}</td>
                 <td><Link href={`/admin/meetings/${event.id}`}>{event.title}</Link></td>
                 <td style={{ fontSize: 11 }}>
                   {event.checkin_open

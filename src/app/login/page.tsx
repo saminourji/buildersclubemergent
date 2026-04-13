@@ -19,24 +19,30 @@ function LoginContent() {
   }
 
   return (
-    <div style={{ maxWidth: 400, margin: '80px auto', padding: '0 16px' }}>
+    <div style={{ maxWidth: 420, margin: '60px auto', padding: '0 16px' }}>
       <table style={{ border: '1px solid #b0c4d8', width: '100%', background: '#fff' }}>
         <tbody>
           <tr>
             <td style={{ background: '#87CEEB', padding: '4px 8px', border: 'none', display: 'flex', alignItems: 'center', gap: 8 }}>
               <img src="/logo.png" alt="B" style={{ height: 20, width: 20, imageRendering: 'pixelated' }} />
               <b style={{ color: '#000' }}>Builders Club</b>
+              <span style={{ fontSize: 9, color: '#fff', background: '#5BA3C9', padding: '1px 4px', fontWeight: 'bold', letterSpacing: 0.5 }}>BETA</span>
             </td>
           </tr>
           <tr>
-            <td style={{ padding: '20px', border: 'none' }}>
-              <p style={{ marginBottom: 8 }}>
-                Welcome to the <b>Builders Club</b> member platform.<br />
-                <a href="https://emergentconference.org" target="_blank" rel="noopener noreferrer">Emergent</a> @ Brown University.
+            <td style={{ padding: '16px 20px', border: 'none' }}>
+              <p style={{ fontSize: 13, marginBottom: 10, lineHeight: 1.6 }}>
+                A weekly gathering for Brown students who are building — or want to start.
+                Every Tuesday we share what we&apos;re working on, hear from builders in the room, and push each other.
+                No pitches. No slides. Just builders.
+              </p>
+              <p style={{ fontSize: 11, color: '#828282', marginBottom: 10 }}>
+                Tuesdays, 7–9 PM · Nelson Center, 4th floor · Run by{' '}
+                <a href="https://emergentconference.org" target="_blank" rel="noopener noreferrer">Emergent</a> @ Brown.
               </p>
               <hr />
-              <p style={{ marginBottom: 12, fontSize: 12 }}>
-                Sign in with your Brown University Google account to continue.
+              <p style={{ marginBottom: 10, marginTop: 10, fontSize: 12 }}>
+                Sign in with your Brown University Google account to access the member platform.
               </p>
               <button
                 onClick={handleLogin}
@@ -56,7 +62,7 @@ function LoginContent() {
           </tr>
         </tbody>
       </table>
-      <p style={{ marginTop: 12, fontSize: 11, color: '#828282', textAlign: 'center' }}>
+      <p style={{ marginTop: 10, fontSize: 11, color: '#828282', textAlign: 'center' }}>
         by signing in you agree to be a builder, not just a talker
       </p>
     </div>

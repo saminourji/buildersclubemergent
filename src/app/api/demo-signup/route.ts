@@ -19,8 +19,13 @@ export async function POST(request: NextRequest) {
     .from('profiles').select('full_name').eq('id', user.id).single()
 
   const { data: event } = await supabase
-    .from('events').select('max_demos').eq('id', event_id).single()
+    .from('events').select('max_demos, event_date').eq('id', event_id).single()
   const maxDemos = event?.max_demos ?? 3
+
+  // Block requests for past meetings
+  if (event?.event_date && new Date(event.event_date) < new Date()) {
+    return NextResponse.redirect(new URL(`/meetings/${event_id}`, request.url))
+  }
 
   const { count } = await supabase
     .from('agenda_slots').select('*', { count: 'exact', head: true })

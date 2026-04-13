@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
-import { format } from 'date-fns'
 import { Event, AgendaSlot } from '@/types/database'
+import { formatET } from '@/lib/helpers'
 import { CheckinCodeDisplay } from '@/components/checkin-code-display'
 import { AdminEventToggle } from '@/components/admin-event-toggle'
 import { AdminAgendaManager } from '@/components/admin-agenda-manager'
@@ -36,7 +36,7 @@ export default async function AdminMeetingDetailPage({ params }: { params: Promi
   return (
     <>
       <p><b>{event.title}</b></p>
-      <p style={{ fontSize: 12, color: '#828282' }}>{format(new Date(event.event_date), 'EEEE, MMMM d, yyyy — h:mm a')}</p>
+      <p style={{ fontSize: 12, color: '#828282' }}>{formatET(event.event_date, 'full')} · Nelson Center, 4th floor</p>
       <hr />
 
       <table style={{ border: 'none', maxWidth: 350 }}>

@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { format, isPast, isBefore } from 'date-fns'
+import { isPast, isBefore } from 'date-fns'
 import { Event } from '@/types/database'
+import { formatET } from '@/lib/helpers'
 
 export default async function MeetingsPage() {
   const supabase = await createClient()
@@ -24,7 +25,9 @@ export default async function MeetingsPage() {
   return (
     <>
       <p><b>Weekly Meetings</b></p>
-      <p style={{ fontSize: 12, color: '#828282' }}>Tuesdays, 7:00 PM — 9:00 PM</p>
+      <p style={{ fontSize: 12, color: '#828282' }}>
+        Tuesdays, 7:00–9:00 PM · Nelson Center, 4th floor
+      </p>
       <hr />
 
       {upcoming.length > 0 && (
@@ -65,7 +68,7 @@ function MeetingTable({ events, checkedInIds, now, dim }: { events: Event[]; che
           return (
             <tr key={event.id} style={{ opacity: dim ? 0.5 : 1 }}>
               <td style={{ whiteSpace: 'nowrap', fontSize: 11 }}>
-                {format(eventDate, 'MMM d, yyyy')}
+                {formatET(event.event_date, 'short')}
               </td>
               <td>
                 <Link href={`/meetings/${event.id}`}>{event.title}</Link>
