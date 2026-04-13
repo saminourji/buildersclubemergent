@@ -63,9 +63,17 @@ export default async function DashboardPage() {
       {!profile?.is_verified && (
         <>
           <hr />
-          <div style={{ border: '1px solid #d4a574', background: '#fef9f0', padding: '8px 12px' }}>
-            <p style={{ fontSize: 12, color: '#8b5e3c' }}>
-              <b>First time?</b> Come to a meeting to unlock the member directory, resources, and Slack.
+          <div style={{ border: '2px solid #d4a574', background: '#fef9f0', padding: '10px 14px' }}>
+            <p style={{ fontSize: 13, color: '#8b5e3c', marginBottom: 4 }}>
+              <b>You need to attend at least 1 meeting to unlock:</b>
+            </p>
+            <ul style={{ paddingLeft: 18, margin: 0, fontSize: 12, color: '#8b5e3c' }}>
+              <li>Member directory</li>
+              <li>Resources &amp; links</li>
+              <li>Slack invite</li>
+            </ul>
+            <p style={{ fontSize: 11, color: '#a07040', marginTop: 6 }}>
+              Next meeting: <b>Tuesdays 7–9 PM · Nelson Center, 4th floor.</b> See you there!
             </p>
           </div>
         </>

@@ -13,10 +13,19 @@ export default async function MeetingsPage() {
     .from('events').select('*')
     .order('event_date', { ascending: false }) as { data: Event[] | null }
 
-  const { data: checkIns } = await supabase
+  const { data: myCheckIns } = await supabase
     .from('check_ins').select('event_id').eq('member_id', user.id)
 
-  const checkedInIds = new Set(checkIns?.map(c => c.event_id) ?? [])
+  // Fetch all check-ins to get real per-meeting counts
+  const { data: allCheckIns } = await supabase
+    .from('check_ins').select('event_id')
+
+  const attendeeCounts: Record<string, number> = {}
+  for (const ci of allCheckIns ?? []) {
+    attendeeCounts[ci.event_id] = (attendeeCounts[ci.event_id] ?? 0) + 1
+  }
+
+  const checkedInIds = new Set(myCheckIns?.map(c => c.event_id) ?? [])
 
   const now = new Date()
   const upcoming = events?.filter(e => !isPast(new Date(e.event_date))) ?? []
@@ -33,14 +42,14 @@ export default async function MeetingsPage() {
       {upcoming.length > 0 && (
         <>
           <p style={{ fontSize: 11, color: '#828282', marginBottom: 4 }}>UPCOMING</p>
-          <MeetingTable events={upcoming} checkedInIds={checkedInIds} now={now} />
+          <MeetingTable events={upcoming} checkedInIds={checkedInIds} attendeeCounts={attendeeCounts} now={now} />
         </>
       )}
 
       {past.length > 0 && (
         <>
           <p style={{ fontSize: 11, color: '#828282', marginBottom: 4, marginTop: 16 }}>PAST</p>
-          <MeetingTable events={past} checkedInIds={checkedInIds} now={now} dim />
+          <MeetingTable events={past} checkedInIds={checkedInIds} attendeeCounts={attendeeCounts} now={now} dim />
         </>
       )}
 
@@ -51,13 +60,20 @@ export default async function MeetingsPage() {
   )
 }
 
-function MeetingTable({ events, checkedInIds, now, dim }: { events: Event[]; checkedInIds: Set<string>; now: Date; dim?: boolean }) {
+function MeetingTable({ events, checkedInIds, attendeeCounts, now, dim }: {
+  events: Event[]
+  checkedInIds: Set<string>
+  attendeeCounts: Record<string, number>
+  now: Date
+  dim?: boolean
+}) {
   return (
     <table>
       <thead>
         <tr>
           <th>date</th>
           <th>meeting</th>
+          <th>attendees</th>
           <th>status</th>
         </tr>
       </thead>
@@ -65,6 +81,7 @@ function MeetingTable({ events, checkedInIds, now, dim }: { events: Event[]; che
         {events.map(event => {
           const eventDate = new Date(event.event_date)
           const isFuture = isBefore(now, eventDate)
+          const count = attendeeCounts[event.id] ?? 0
           return (
             <tr key={event.id} style={{ opacity: dim ? 0.5 : 1 }}>
               <td style={{ whiteSpace: 'nowrap', fontSize: 11 }}>
@@ -72,6 +89,11 @@ function MeetingTable({ events, checkedInIds, now, dim }: { events: Event[]; che
               </td>
               <td>
                 <Link href={`/meetings/${event.id}`}>{event.title}</Link>
+              </td>
+              <td style={{ fontSize: 11 }}>
+                {count > 0
+                  ? <Link href={`/meetings/${event.id}`}>{count}</Link>
+                  : <span style={{ color: '#ccc' }}>—</span>}
               </td>
               <td style={{ fontSize: 11 }}>
                 {checkedInIds.has(event.id) ? (

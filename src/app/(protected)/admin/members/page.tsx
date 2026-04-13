@@ -16,6 +16,13 @@ export default async function AdminMembersPage({
   const supabase = await createClient()
   const params = await searchParams
 
+  // Real check-in counts from the check_ins table
+  const { data: allCheckIns } = await supabase.from('check_ins').select('member_id')
+  const realCheckinCounts: Record<string, number> = {}
+  for (const ci of allCheckIns ?? []) {
+    realCheckinCounts[ci.member_id] = (realCheckinCounts[ci.member_id] ?? 0) + 1
+  }
+
   let query = supabase.from('profiles').select('*').order('created_at', { ascending: false })
   if (params.filter === 'verified') query = query.eq('is_verified', true).eq('archived', false)
   else if (params.filter === 'unverified') query = query.eq('is_verified', false).eq('archived', false)
@@ -100,7 +107,7 @@ export default async function AdminMembersPage({
               <td style={{ fontSize: 11 }}>{m.build_stage ? STAGE_LABELS[m.build_stage] : '—'}</td>
               <td>
                 <a href={`/admin/members?detail=${m.id}${params.q ? `&q=${params.q}` : ''}${params.filter ? `&filter=${params.filter}` : ''}`}>
-                  {m.checkin_count} attended
+                  {realCheckinCounts[m.id] ?? 0} attended
                 </a>
               </td>
               <td style={{ fontSize: 11 }}>

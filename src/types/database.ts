@@ -16,6 +16,7 @@ export interface Profile {
   project_url: string | null
   phone: string | null
   resource_preferences: string[]
+  skills: string[]
   checkin_count: number
   is_verified: boolean
   is_admin: boolean

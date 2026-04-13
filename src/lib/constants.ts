@@ -24,6 +24,20 @@ export const INTEREST_AREAS = [
   'Other',
 ]
 
+export const SKILLS = [
+  'Frontend / Web',
+  'Backend / APIs',
+  'Mobile',
+  'ML / AI',
+  'Data',
+  'Design / UI/UX',
+  'Hardware',
+  'DevOps / Infra',
+  'Product',
+  'Business / Growth',
+  'Other',
+]
+
 export const RESOURCE_OPTIONS = [
   'Funding & grants',
   'Co-founder matching',
