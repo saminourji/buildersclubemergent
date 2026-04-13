@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { format } from 'date-fns'
 import { Event, AgendaSlot } from '@/types/database'
-import { QRDisplay } from '@/components/qr-display'
+import { CheckinCodeDisplay } from '@/components/checkin-code-display'
 import { AdminEventToggle } from '@/components/admin-event-toggle'
 import { AdminAgendaManager } from '@/components/admin-agenda-manager'
 
@@ -21,7 +21,6 @@ export default async function AdminMeetingDetailPage({ params }: { params: Promi
   const { count: checkinCount } = await supabase
     .from('check_ins').select('*', { count: 'exact', head: true }).eq('event_id', id)
 
-  // Get attendees
   const { data: attendeeCheckins } = await supabase
     .from('check_ins').select('member_id').eq('event_id', id)
   const attendeeIds = attendeeCheckins?.map(c => c.member_id) ?? []
@@ -30,8 +29,6 @@ export default async function AdminMeetingDetailPage({ params }: { params: Promi
     const { data } = await supabase.from('profiles').select('full_name, email').in('id', attendeeIds)
     attendees = data ?? []
   }
-
-  const checkinUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/checkin/${event.qr_token}`
 
   return (
     <>
@@ -53,8 +50,8 @@ export default async function AdminMeetingDetailPage({ params }: { params: Promi
       </table>
 
       <hr />
-      <p style={{ fontSize: 11, color: '#828282', marginBottom: 4 }}>QR CHECK-IN</p>
-      <QRDisplay url={checkinUrl} token={event.qr_token} />
+      <p style={{ fontSize: 11, color: '#828282', marginBottom: 4 }}>CHECK-IN CODE</p>
+      <CheckinCodeDisplay code={event.qr_token} />
 
       <hr />
       <p style={{ fontSize: 11, color: '#828282', marginBottom: 4 }}>AGENDA</p>

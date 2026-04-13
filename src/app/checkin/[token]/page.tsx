@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { CheckInButton } from '@/components/checkin-button'
+import { CheckinCodeInput } from '@/components/checkin-code-input'
 import { format } from 'date-fns'
 
 export default async function CheckInPage({ params }: { params: Promise<{ token: string }> }) {
@@ -30,7 +30,7 @@ export default async function CheckInPage({ params }: { params: Promise<{ token:
           <tr>
             <td style={{ padding: '20px', border: 'none', textAlign: 'center' }}>
               {!event ? (
-                <p>Event not found. This QR code is invalid.</p>
+                <p>Meeting not found. Invalid code.</p>
               ) : existing ? (
                 <>
                   <p>You already checked in to <b>{event.title}</b>.</p>
@@ -45,7 +45,7 @@ export default async function CheckInPage({ params }: { params: Promise<{ token:
                   <p style={{ fontSize: 12, color: '#828282', marginBottom: 12 }}>
                     {format(new Date(event.event_date), 'EEEE, MMMM d — h:mm a')}
                   </p>
-                  <CheckInButton eventId={event.id} />
+                  <CheckinCodeInput eventId={event.id} expectedCode={event.qr_token} />
                 </>
               )}
               <p style={{ marginTop: 16 }}>

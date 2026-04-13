@@ -1,9 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { format, isBefore } from 'date-fns'
-import { Event, AgendaSlot, Profile } from '@/types/database'
-import { CheckInButton } from '@/components/checkin-button'
-import { formatClassYear } from '@/lib/helpers'
+import { Event, AgendaSlot } from '@/types/database'
+import { CheckinCodeInput } from '@/components/checkin-code-input'
 
 const TYPE_LABELS: Record<string, string> = {
   announcement: 'ANNOUNCE', speaker: 'SPEAKER', demo: 'DEMO',
@@ -35,7 +34,6 @@ export default async function MeetingPage({ params }: { params: Promise<{ id: st
   const visibleSlots = profile?.is_admin ? (slots ?? []) : (slots ?? []).filter(s => s.approved)
   const isFuture = isBefore(new Date(), new Date(event.event_date))
 
-  // Get attendees
   const { data: attendeeCheckins } = await supabase
     .from('check_ins').select('member_id').eq('event_id', id)
   const attendeeIds = attendeeCheckins?.map(c => c.member_id) ?? []
@@ -48,7 +46,6 @@ export default async function MeetingPage({ params }: { params: Promise<{ id: st
     attendees = data ?? []
   }
 
-  // Count current demo slots (non-announcement, non-speaker)
   const demoCount = (slots ?? []).filter(s => s.slot_type === 'demo').length
 
   return (
@@ -66,7 +63,7 @@ export default async function MeetingPage({ params }: { params: Promise<{ id: st
         {alreadyCheckedIn ? (
           <span style={{ color: 'green' }}><b>[you attended this meeting]</b></span>
         ) : event.checkin_open ? (
-          <CheckInButton eventId={event.id} />
+          <CheckinCodeInput eventId={event.id} expectedCode={event.qr_token} />
         ) : isFuture ? (
           <span style={{ color: '#828282' }}>not opened yet</span>
         ) : (
@@ -92,7 +89,7 @@ export default async function MeetingPage({ params }: { params: Promise<{ id: st
                   <td style={{ fontSize: 10, fontFamily: 'monospace' }}>[{TYPE_LABELS[slot.slot_type]}]</td>
                   <td>
                     {slot.title}
-                    {!slot.approved && <span style={{ color: '#0066cc', fontSize: 10 }}> (pending)</span>}
+                    {!slot.approved && <span style={{ color: '#0066cc', fontSize: 10 }}> (pending approval)</span>}
                   </td>
                   <td style={{ fontSize: 11 }}>{slot.presenter_name ?? '—'}</td>
                 </tr>
@@ -102,17 +99,11 @@ export default async function MeetingPage({ params }: { params: Promise<{ id: st
         </>
       )}
 
-      {event.checkin_open && demoCount < 3 && (
-        <>
-          <hr />
-          <DemoSignupForm eventId={event.id} userId={user.id} />
-        </>
-      )}
-      {event.checkin_open && demoCount >= 3 && (
-        <>
-          <hr />
-          <p style={{ fontSize: 12, color: '#828282' }}>Demo slots are full (max 3 per meeting).</p>
-        </>
+      <hr />
+      {demoCount < 3 ? (
+        <DemoSignupForm eventId={event.id} userId={user.id} />
+      ) : (
+        <p style={{ fontSize: 12, color: '#828282' }}>Demo slots are full (max 3 per meeting).</p>
       )}
 
       {attendees.length > 0 && (

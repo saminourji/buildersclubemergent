@@ -30,7 +30,7 @@ export default async function AdminMeetingsPage() {
                     ? <span style={{ color: '#0066cc' }}>[open]</span>
                     : <span style={{ color: '#999' }}>[closed]</span>}
                 </td>
-                <td><AdminEventActions eventId={event.id} checkinOpen={event.checkin_open} /></td>
+                <td><AdminEventActions eventId={event.id} eventTitle={event.title} checkinOpen={event.checkin_open} /></td>
               </tr>
             ))}
           </tbody>
