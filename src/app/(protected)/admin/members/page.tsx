@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { Profile, Event, CheckIn } from '@/types/database'
+import { Profile } from '@/types/database'
 import { formatClassYear } from '@/lib/helpers'
 import { format } from 'date-fns'
 import { AdminMemberActions } from '@/components/admin-member-actions'
@@ -17,9 +17,11 @@ export default async function AdminMembersPage({
   const params = await searchParams
 
   let query = supabase.from('profiles').select('*').order('created_at', { ascending: false })
-  if (params.filter === 'verified') query = query.eq('is_verified', true)
-  if (params.filter === 'unverified') query = query.eq('is_verified', false)
-  if (params.filter === 'admin') query = query.eq('is_admin', true)
+  if (params.filter === 'verified') query = query.eq('is_verified', true).eq('archived', false)
+  else if (params.filter === 'unverified') query = query.eq('is_verified', false).eq('archived', false)
+  else if (params.filter === 'admin') query = query.eq('is_admin', true)
+  else if (params.filter === 'archived') query = query.eq('archived', true)
+  else query = query.eq('archived', false)
 
   const { data: members } = await query as { data: Profile[] | null }
 
@@ -29,7 +31,6 @@ export default async function AdminMembersPage({
     return m.full_name?.toLowerCase().includes(q) || m.email.toLowerCase().includes(q)
   }) ?? []
 
-  // If detail view requested, load attendance for that member
   let detailMember: Profile | null = null
   let detailAttendance: { event_title: string; event_date: string }[] = []
   if (params.detail) {
@@ -54,8 +55,11 @@ export default async function AdminMembersPage({
       <form method="get" style={{ marginBottom: 12 }}>
         <input name="q" defaultValue={params.q} placeholder="search..." style={{ width: 200, marginRight: 4 }} />
         <select name="filter" defaultValue={params.filter ?? ''} style={{ marginRight: 4 }}>
-          <option value="">all</option><option value="verified">verified</option>
-          <option value="unverified">unverified</option><option value="admin">admins</option>
+          <option value="">active</option>
+          <option value="verified">verified</option>
+          <option value="unverified">unverified</option>
+          <option value="admin">admins</option>
+          <option value="archived">archived</option>
         </select>
         <button type="submit" style={{ background: '#d4e6f1', border: '1px solid #b0c4d8', padding: '2px 10px', cursor: 'pointer' }}>go</button>
         {(params.q || params.filter) && <> <a href="/admin/members" style={{ fontSize: 11 }}>clear</a></>}
@@ -86,8 +90,11 @@ export default async function AdminMembersPage({
         </thead>
         <tbody>
           {filtered.map(m => (
-            <tr key={m.id}>
-              <td>{m.full_name ?? '—'}</td>
+            <tr key={m.id} style={{ opacity: m.archived ? 0.5 : 1 }}>
+              <td>
+                {m.full_name ?? '—'}
+                {m.archived && <span style={{ color: '#a52a2a', fontSize: 10 }}> [archived]</span>}
+              </td>
               <td style={{ fontSize: 11 }}>{m.email}</td>
               <td>{formatClassYear(m.class_year)}</td>
               <td style={{ fontSize: 11 }}>{m.build_stage ? STAGE_LABELS[m.build_stage] : '—'}</td>
@@ -102,7 +109,15 @@ export default async function AdminMembersPage({
                   ? <span style={{ color: 'green' }}>[verified]</span>
                   : <span style={{ color: '#999' }}>[unverified]</span>}
               </td>
-              <td><AdminMemberActions memberId={m.id} memberName={m.full_name ?? m.email} isVerified={m.is_verified} isAdmin={m.is_admin} /></td>
+              <td>
+                <AdminMemberActions
+                  memberId={m.id}
+                  memberName={m.full_name ?? m.email}
+                  isVerified={m.is_verified}
+                  isAdmin={m.is_admin}
+                  isArchived={m.archived}
+                />
+              </td>
             </tr>
           ))}
         </tbody>

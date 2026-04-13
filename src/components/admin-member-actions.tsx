@@ -4,8 +4,8 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 
-export function AdminMemberActions({ memberId, memberName, isVerified, isAdmin }: {
-  memberId: string; memberName: string; isVerified: boolean; isAdmin: boolean
+export function AdminMemberActions({ memberId, memberName, isVerified, isAdmin, isArchived }: {
+  memberId: string; memberName: string; isVerified: boolean; isAdmin: boolean; isArchived: boolean
 }) {
   const router = useRouter()
 
@@ -23,15 +23,27 @@ export function AdminMemberActions({ memberId, memberName, isVerified, isAdmin }
     router.refresh()
   }
 
-  async function deleteMember() {
-    if (!confirm(`Are you sure you want to delete ${memberName}?\n\nThis will permanently remove their profile and all check-in history. This cannot be undone.`)) return
-    if (!confirm(`Really delete ${memberName}? Last chance.`)) return
-
+  async function archiveMember() {
+    if (!confirm(`Archive ${memberName}?\n\nThey will be hidden from the directory and can't log in, but their data is preserved.`)) return
     const supabase = createClient()
-    await supabase.from('check_ins').delete().eq('member_id', memberId)
-    await supabase.from('profiles').delete().eq('id', memberId)
-    toast.success('Member deleted')
+    await supabase.from('profiles').update({ archived: true, archived_at: new Date().toISOString() }).eq('id', memberId)
+    toast.success('Archived')
     router.refresh()
+  }
+
+  async function unarchiveMember() {
+    const supabase = createClient()
+    await supabase.from('profiles').update({ archived: false, archived_at: null }).eq('id', memberId)
+    toast.success('Restored')
+    router.refresh()
+  }
+
+  if (isArchived) {
+    return (
+      <span style={{ fontSize: 11 }}>
+        <a onClick={unarchiveMember} style={{ cursor: 'pointer', color: 'green' }}>restore</a>
+      </span>
+    )
   }
 
   return (
@@ -44,8 +56,8 @@ export function AdminMemberActions({ memberId, memberName, isVerified, isAdmin }
         {isAdmin ? 'remove admin' : 'make admin'}
       </a>
       {' | '}
-      <a onClick={deleteMember} style={{ cursor: 'pointer', color: '#a52a2a' }}>
-        delete
+      <a onClick={archiveMember} style={{ cursor: 'pointer', color: '#a52a2a' }}>
+        archive
       </a>
     </span>
   )

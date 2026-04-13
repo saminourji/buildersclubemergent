@@ -19,6 +19,9 @@ export interface Profile {
   is_verified: boolean
   is_admin: boolean
   onboarding_complete: boolean
+  archived: boolean
+  archived_at: string | null
+  tutorial_complete: boolean
   created_at: string
   updated_at: string
 }

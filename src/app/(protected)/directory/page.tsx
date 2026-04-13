@@ -20,7 +20,7 @@ export default async function DirectoryPage({
   if (!me?.is_verified) redirect('/dashboard')
 
   const params = await searchParams
-  let query = supabase.from('profiles').select('*').eq('onboarding_complete', true).order('full_name', { ascending: true })
+  let query = supabase.from('profiles').select('*').eq('onboarding_complete', true).eq('archived', false).order('full_name', { ascending: true })
   if (params.stage) query = query.eq('build_stage', params.stage)
 
   const { data: members } = await query as { data: Profile[] | null }

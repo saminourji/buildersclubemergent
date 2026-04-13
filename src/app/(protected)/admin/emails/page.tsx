@@ -5,13 +5,13 @@ export default async function AdminEmailsPage() {
   const supabase = await createClient()
 
   const { data: allMembers } = await supabase
-    .from('profiles').select('email').eq('onboarding_complete', true).order('email')
+    .from('profiles').select('email').eq('onboarding_complete', true).eq('archived', false).order('email')
 
   const { data: verifiedMembers } = await supabase
-    .from('profiles').select('email').eq('is_verified', true).order('email')
+    .from('profiles').select('email').eq('is_verified', true).eq('archived', false).order('email')
 
   const { data: unverifiedMembers } = await supabase
-    .from('profiles').select('email').eq('is_verified', false).eq('onboarding_complete', true).order('email')
+    .from('profiles').select('email').eq('is_verified', false).eq('onboarding_complete', true).eq('archived', false).order('email')
 
   return (
     <>

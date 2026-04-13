@@ -80,3 +80,17 @@ table th {
 table tr:hover {
   background: #e8f4fd;
 }
+
+@media (max-width: 600px) {
+  table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  table th, table td {
+    padding: 3px 6px;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+}
