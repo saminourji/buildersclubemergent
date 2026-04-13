@@ -17,6 +17,7 @@ export default function OnboardingPage() {
     build_stage: '',
     project_name: '',
     project_url: '',
+    phone: '',
     resource_preferences: [] as string[],
   })
 
@@ -62,6 +63,7 @@ export default function OnboardingPage() {
       build_stage: form.build_stage || null,
       project_name: form.project_name || null,
       project_url: form.project_url || null,
+      phone: form.phone || null,
       resource_preferences: form.resource_preferences,
       onboarding_complete: true,
     }, { onConflict: 'id' })
@@ -123,6 +125,9 @@ export default function OnboardingPage() {
                         </Row>
                       </>
                     )}
+                    <Row label="Phone">
+                      <input type="tel" value={form.phone} onChange={e => update('phone', e.target.value)} style={{ width: '100%' }} placeholder="optional" />
+                    </Row>
                   </tbody>
                 </table>
 

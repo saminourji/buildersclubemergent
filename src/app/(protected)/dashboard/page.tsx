@@ -42,7 +42,7 @@ export default async function DashboardPage() {
   return (
     <>
       <p style={{ fontSize: 15 }}>
-        <b>Hey {profile?.full_name?.split(' ')[0] ?? 'builder'} 👋</b>
+        <b>Hey {profile?.full_name?.split(' ')[0] ?? 'builder'}</b>
       </p>
       <p style={{ fontSize: 12, color: '#666', marginTop: 2 }}>
         Welcome to Builders Club. We meet Tuesdays, 7–9 PM.
@@ -53,7 +53,7 @@ export default async function DashboardPage() {
           <hr />
           <div style={{ border: '1px solid #d4a574', background: '#fef9f0', padding: '8px 12px' }}>
             <p style={{ fontSize: 12, color: '#8b5e3c' }}>
-              <b>📋 First time?</b> Come to a meeting and enter the check-in code to unlock the member directory, resources, and Slack.
+              <b>First time?</b> Come to a meeting to unlock the member directory, resources, and Slack.
             </p>
           </div>
         </>
@@ -95,11 +95,7 @@ export default async function DashboardPage() {
             )}
 
             <div style={{ marginTop: 10, fontSize: 12 }}>
-              {nextMeeting.checkin_open ? (
-                <span style={{ color: '#0066cc' }}>✓ Check-in is open — <Link href={`/meetings/${nextMeeting.id}`}>enter code</Link></span>
-              ) : (
-                <span style={{ color: '#828282' }}>Check-in not opened yet</span>
-              )}
+              <Link href={`/meetings/${nextMeeting.id}`}>view meeting details</Link>
               {nextDemoCount < nextMaxDemos && (
                 <>
                   {' · '}
@@ -135,7 +131,7 @@ export default async function DashboardPage() {
           <p style={{ fontSize: 11, color: '#828282', marginBottom: 4 }}>MORE UPCOMING</p>
           <table>
             <thead>
-              <tr><th>date</th><th>meeting</th><th>status</th></tr>
+              <tr><th>date</th><th>meeting</th></tr>
             </thead>
             <tbody>
               {upcomingEvents.slice(1).map(event => (
@@ -144,15 +140,6 @@ export default async function DashboardPage() {
                     {format(new Date(event.event_date), 'MMM d')}
                   </td>
                   <td><Link href={`/meetings/${event.id}`}>{event.title}</Link></td>
-                  <td style={{ fontSize: 11 }}>
-                    {checkedInIds.has(event.id) ? (
-                      <span style={{ color: 'green' }}>[attended]</span>
-                    ) : event.checkin_open ? (
-                      <span style={{ color: '#0066cc' }}>[check-in open]</span>
-                    ) : (
-                      <span style={{ color: '#828282' }}>[not opened yet]</span>
-                    )}
-                  </td>
                 </tr>
               ))}
             </tbody>

@@ -11,7 +11,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [form, setForm] = useState({
-    full_name: '', class_year: '', concentration: '',
+    full_name: '', class_year: '', concentration: '', phone: '',
     interest_area: [] as string[], build_stage: '', project_name: '', project_url: '',
     resource_preferences: [] as string[],
   })
@@ -32,7 +32,7 @@ export default function ProfilePage() {
           else classYearStr = String(p.class_year)
         }
         setForm({
-          full_name: p.full_name ?? '', class_year: classYearStr, concentration: p.concentration ?? '',
+          full_name: p.full_name ?? '', class_year: classYearStr, concentration: p.concentration ?? '', phone: p.phone ?? '',
           interest_area: p.interest_area ?? [], build_stage: p.build_stage ?? '',
           project_name: p.project_name ?? '', project_url: p.project_url ?? '',
           resource_preferences: p.resource_preferences ?? [],
@@ -86,6 +86,7 @@ export default function ProfilePage() {
       build_stage: form.build_stage || null,
       project_name: form.project_name || null,
       project_url: form.project_url || null,
+      phone: form.phone || null,
       resource_preferences: form.resource_preferences,
     }).eq('id', user.id)
 
@@ -138,6 +139,7 @@ export default function ProfilePage() {
                 <Row label="project url"><input type="url" value={form.project_url} onChange={e => update('project_url', e.target.value)} style={{ width: '100%' }} /></Row>
               </>
             )}
+            <Row label="phone"><input type="tel" value={form.phone} onChange={e => update('phone', e.target.value)} style={{ width: '100%' }} placeholder="optional" /></Row>
           </tbody>
         </table>
 

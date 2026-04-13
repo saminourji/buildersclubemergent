@@ -65,6 +65,7 @@ export default async function DirectoryPage({
               <th>interests</th>
               <th>stage</th>
               <th>project</th>
+              <th>phone</th>
               <th>contact</th>
             </tr>
           </thead>
@@ -84,6 +85,7 @@ export default async function DirectoryPage({
                     m.project_url ? <a href={m.project_url} target="_blank" rel="noopener noreferrer">{m.project_name}</a> : m.project_name
                   ) : '—'}
                 </td>
+                <td style={{ fontSize: 11 }}>{m.phone ?? '—'}</td>
                 <td style={{ fontSize: 11 }}><a href={`mailto:${m.email}`}>email</a></td>
               </tr>
             ))}

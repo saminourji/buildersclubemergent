@@ -14,6 +14,7 @@ export interface Profile {
   build_stage: BuildStage | null
   project_name: string | null
   project_url: string | null
+  phone: string | null
   resource_preferences: string[]
   checkin_count: number
   is_verified: boolean
