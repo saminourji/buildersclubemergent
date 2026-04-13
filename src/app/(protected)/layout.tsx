@@ -15,7 +15,9 @@ export default async function ProtectedLayout({ children }: { children: React.Re
     .eq('id', user.id)
     .single()
 
-  if (!profile?.onboarding_complete) redirect('/onboarding')
+  // No profile at all means the auth callback didn't finish — send to onboarding
+  // which will upsert the profile row
+  if (!profile || !profile.onboarding_complete) redirect('/onboarding')
 
   return (
     <div className="min-h-screen flex flex-col">

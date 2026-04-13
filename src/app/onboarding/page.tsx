@@ -70,7 +70,9 @@ export default function OnboardingPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/login'); return }
 
-    const { error } = await supabase.from('profiles').update({
+    const profileData = {
+      id: user.id,
+      email: user.email ?? '',
       full_name: form.full_name || null,
       class_year: form.class_year ? parseInt(form.class_year) : null,
       concentration: form.concentration || null,
@@ -80,10 +82,16 @@ export default function OnboardingPage() {
       project_url: form.project_url || null,
       resource_preferences: form.resource_preferences,
       onboarding_complete: true,
-    }).eq('id', user.id)
+    }
+
+    // Use upsert so it works whether or not the profile row already exists
+    const { error } = await supabase
+      .from('profiles')
+      .upsert(profileData, { onConflict: 'id' })
 
     if (error) {
-      toast.error('Something went wrong. Please try again.')
+      console.error('Onboarding save error:', error)
+      toast.error(`Something went wrong: ${error.message}`)
       setLoading(false)
       return
     }

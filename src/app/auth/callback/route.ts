@@ -23,17 +23,19 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}/login`)
   }
 
-  // Restrict to brown.edu emails
   const email = user.email ?? ''
-  if (!email.endsWith('@brown.edu') && !email.endsWith('@alumni.brown.edu')) {
+
+  // Allow admin emails regardless of domain; restrict others to brown.edu
+  const adminEmails = (process.env.ADMIN_EMAILS ?? '').split(',').map(e => e.trim()).filter(Boolean)
+  const isAdmin = adminEmails.includes(email)
+  const isBrownEmail = email.endsWith('@brown.edu') || email.endsWith('@alumni.brown.edu')
+
+  if (!isAdmin && !isBrownEmail) {
     await supabase.auth.signOut()
     return NextResponse.redirect(`${origin}/login?error=not_brown`)
   }
 
-  // Upsert profile
-  const adminEmails = (process.env.ADMIN_EMAILS ?? '').split(',').map(e => e.trim())
-  const isAdmin = adminEmails.includes(email)
-
+  // Check if profile exists
   const { data: existing } = await supabase
     .from('profiles')
     .select('id, onboarding_complete')
@@ -41,17 +43,31 @@ export async function GET(request: NextRequest) {
     .single()
 
   if (!existing) {
-    await supabase.from('profiles').insert({
+    // Create profile for new user
+    const { error: insertError } = await supabase.from('profiles').insert({
       id: user.id,
       email,
       full_name: user.user_metadata?.full_name ?? null,
       avatar_url: user.user_metadata?.avatar_url ?? null,
       is_admin: isAdmin,
     })
+
+    if (insertError) {
+      console.error('Profile insert error:', insertError)
+      // Try upsert as fallback
+      await supabase.from('profiles').upsert({
+        id: user.id,
+        email,
+        full_name: user.user_metadata?.full_name ?? null,
+        avatar_url: user.user_metadata?.avatar_url ?? null,
+        is_admin: isAdmin,
+      }, { onConflict: 'id' })
+    }
+
     return NextResponse.redirect(`${origin}/onboarding`)
   }
 
-  // Make admin if email matches
+  // Ensure admin flag is set correctly
   if (isAdmin && !existing) {
     await supabase.from('profiles').update({ is_admin: true }).eq('id', user.id)
   }
