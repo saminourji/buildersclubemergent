@@ -63,7 +63,7 @@ function LoginContent() {
         </tbody>
       </table>
       <p style={{ marginTop: 10, fontSize: 11, color: '#828282', textAlign: 'center' }}>
-        by signing in you agree to be a builder, not just a talker
+        by signing in you agree to be a builder. this is not a place for performative &apos;entrepreneurship&apos;
       </p>
     </div>
   )
