@@ -65,7 +65,7 @@ export default function PrivacyPage() {
 
               <p style={{ fontSize: 12, marginTop: 12 }}><b>Contact</b></p>
               <p style={{ fontSize: 12, lineHeight: 1.7 }}>
-                Questions or deletion requests: <a href="mailto:buildersclub@emergentconference.org">buildersclub@emergentconference.org</a>
+                Questions or deletion requests: <a href="mailto:info@emergentconference.org">info@emergentconference.org</a>
               </p>
             </td>
           </tr>

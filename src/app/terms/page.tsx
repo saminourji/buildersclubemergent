@@ -39,7 +39,7 @@ export default function TermsPage() {
               <ul style={{ paddingLeft: 18, fontSize: 12, lineHeight: 1.7, marginTop: 6 }}>
                 <li>Be respectful. Don’t harass, impersonate, or spam members.</li>
                 <li>Provide accurate information in your profile and demo requests.</li>
-                <li>Do not scrape the directory or attempt to export member data at scale.</li>
+                <li><b>No scraping / harvesting</b>: Do not scrape the directory, copy member emails/phone numbers in bulk, or attempt to export member data at scale.</li>
                 <li>Do not attempt to bypass access controls or interfere with the Platform.</li>
               </ul>
 
@@ -61,7 +61,7 @@ export default function TermsPage() {
 
               <p style={{ fontSize: 12, marginTop: 12 }}><b>Contact</b></p>
               <p style={{ fontSize: 12, lineHeight: 1.7 }}>
-                Questions: <a href="mailto:buildersclub@emergentconference.org">buildersclub@emergentconference.org</a>
+                Questions: <a href="mailto:info@emergentconference.org">info@emergentconference.org</a>
               </p>
             </td>
           </tr>

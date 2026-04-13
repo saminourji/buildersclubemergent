@@ -17,6 +17,8 @@ export interface Profile {
   phone: string | null
   resource_preferences: string[]
   skills: string[]
+  terms_accepted_at: string | null
+  privacy_acknowledged_at: string | null
   checkin_count: number
   is_verified: boolean
   is_admin: boolean

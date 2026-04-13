@@ -9,6 +9,7 @@ import { CLASS_YEARS, INTEREST_AREAS, SKILLS, RESOURCE_OPTIONS } from '@/lib/con
 export default function OnboardingPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [accepted, setAccepted] = useState(false)
   const [form, setForm] = useState({
     full_name: '',
     class_year: '',
@@ -49,6 +50,7 @@ export default function OnboardingPage() {
     e.preventDefault()
     if (!form.full_name) { toast.error('Name is required'); return }
     if (!form.build_stage) { toast.error('Select your build stage'); return }
+    if (!accepted) { toast.error('You must agree to the Terms and acknowledge the Privacy Policy'); return }
 
     setLoading(true)
     const supabase = createClient()
@@ -69,6 +71,8 @@ export default function OnboardingPage() {
       phone: form.phone || null,
       resource_preferences: resolveWithOther(form.resource_preferences, form.resourceOther),
       onboarding_complete: true,
+      terms_accepted_at: new Date().toISOString(),
+      privacy_acknowledged_at: new Date().toISOString(),
     }, { onConflict: 'id' })
 
     if (error) {
@@ -163,6 +167,21 @@ export default function OnboardingPage() {
                 />
 
                 <hr />
+                <div style={{ marginBottom: 12 }}>
+                  <label style={{ fontSize: 12, cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={accepted}
+                      onChange={e => setAccepted(e.target.checked)}
+                      style={{ marginRight: 6 }}
+                      required
+                    />
+                    I agree to the{' '}
+                    <a href="/terms" target="_blank" rel="noopener noreferrer">Terms</a>
+                    {' '}and acknowledge the{' '}
+                    <a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.
+                  </label>
+                </div>
                 <button
                   type="submit" disabled={loading}
                   style={{ background: '#87CEEB', color: '#000', border: '1px solid #5BA3C9', padding: '6px 16px', cursor: 'pointer', fontWeight: 'bold', fontSize: 13 }}
