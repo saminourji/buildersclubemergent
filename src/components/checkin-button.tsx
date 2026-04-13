@@ -1,25 +1,34 @@
 'use client'
 
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
+import { useState } from 'react'
 
 export function CheckInButton({ eventId }: { eventId: string }) {
-  const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const [loading, setLoading] = useState(false)
 
-  async function handleCheckIn() {
+  async function checkin() {
     setLoading(true)
-    const res = await fetch(`/api/checkin/${eventId}`, { method: 'POST' })
-    const data = await res.json()
-    if (res.ok) { toast.success('Checked in!'); router.refresh() }
-    else toast.error(data.error ?? 'Failed')
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { router.push('/login'); return }
+
+    const { error } = await supabase.from('check_ins').insert({ member_id: user.id, event_id: eventId })
+    if (error) {
+      if (error.code === '23505') toast.info('Already checked in')
+      else toast.error('Failed to check in')
+    } else {
+      toast.success('Checked in!')
+    }
     setLoading(false)
+    router.refresh()
   }
 
   return (
-    <a onClick={handleCheckIn} style={{ cursor: 'pointer', fontWeight: 'bold', color: '#ff6600' }}>
-      {loading ? '[checking in...]' : '[check in now]'}
+    <a onClick={checkin} style={{ cursor: 'pointer', fontWeight: 'bold', color: '#0066cc' }}>
+      {loading ? 'checking in...' : '[check in now]'}
     </a>
   )
 }

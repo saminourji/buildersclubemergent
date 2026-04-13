@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
-import { Resend } from 'resend'
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
@@ -8,10 +7,7 @@ export async function POST(request: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { data: profile } = await supabase
-    .from('profiles')
-    .select('is_admin')
-    .eq('id', user.id)
-    .single()
+    .from('profiles').select('is_admin').eq('id', user.id).single()
 
   if (!profile?.is_admin) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -33,40 +29,36 @@ export async function POST(request: NextRequest) {
   }
 
   const resendKey = process.env.RESEND_API_KEY
-  if (!resendKey || resendKey === 'your_resend_api_key_here') {
-    // Log without sending if Resend not configured
-    console.log(`[EMAIL BLAST] Would send to ${recipients.length} recipients: "${subject}"`)
-    await supabase.from('email_blasts').insert({
-      subject,
-      body,
-      audience,
-      sent_by: user.id,
-      recipient_count: recipients.length,
-    })
-    return NextResponse.json({ success: true, count: recipients.length, simulated: true })
-  }
+  let simulated = false
 
-  const resend = new Resend(resendKey)
+  if (resendKey && resendKey !== 'your_resend_api_key_here') {
+    try {
+      const { Resend } = await import('resend')
+      const resend = new Resend(resendKey)
 
-  // Send in batches of 50
-  const BATCH = 50
-  for (let i = 0; i < recipients.length; i += BATCH) {
-    const batch = recipients.slice(i, i + BATCH)
-    await resend.emails.send({
-      from: 'Builders Club <noreply@buildersclub.emergent.build>',
-      to: batch.map(r => r.email),
-      subject,
-      text: body,
-    })
+      const BATCH = 50
+      for (let i = 0; i < recipients.length; i += BATCH) {
+        const batch = recipients.slice(i, i + BATCH)
+        await resend.emails.send({
+          from: 'Builders Club <onboarding@resend.dev>',
+          to: batch.map(r => r.email),
+          subject,
+          text: body,
+        })
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error'
+      console.error('[EMAIL BLAST] Resend error:', message)
+      simulated = true
+    }
+  } else {
+    console.log(`[EMAIL BLAST] No RESEND_API_KEY — simulating send to ${recipients.length} recipients`)
+    simulated = true
   }
 
   await supabase.from('email_blasts').insert({
-    subject,
-    body,
-    audience,
-    sent_by: user.id,
-    recipient_count: recipients.length,
+    subject, body, audience, sent_by: user.id, recipient_count: recipients.length,
   })
 
-  return NextResponse.json({ success: true, count: recipients.length })
+  return NextResponse.json({ success: true, count: recipients.length, simulated })
 }

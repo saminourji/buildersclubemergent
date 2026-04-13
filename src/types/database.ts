@@ -9,7 +9,8 @@ export interface Profile {
   avatar_url: string | null
   class_year: number | null
   concentration: string | null
-  interest_area: string | null
+  interest_area: string[]
+  custom_avatar_url: string | null
   build_stage: BuildStage | null
   project_name: string | null
   project_url: string | null

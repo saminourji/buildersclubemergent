@@ -34,7 +34,7 @@ export function EmailComposer() {
   }
 
   return (
-    <div style={{ border: '1px solid #ccc', padding: 12, background: '#fff' }}>
+    <div style={{ border: '1px solid #b0c4d8', padding: 12, background: '#fff' }}>
       <p style={{ marginBottom: 8, fontSize: 12 }}><b>Compose email</b></p>
       <form onSubmit={handleSend}>
         <table style={{ border: 'none', width: '100%' }}>
@@ -63,7 +63,7 @@ export function EmailComposer() {
             </tr>
           </tbody>
         </table>
-        <button type="submit" disabled={loading || !form.subject || !form.body} style={{ background: '#ff6600', color: '#000', border: '1px solid #cc5200', padding: '6px 16px', cursor: 'pointer', fontWeight: 'bold', marginTop: 4 }}>
+        <button type="submit" disabled={loading || !form.subject || !form.body} style={{ background: '#87CEEB', color: '#000', border: '1px solid #5BA3C9', padding: '6px 16px', cursor: 'pointer', fontWeight: 'bold', marginTop: 4 }}>
           {loading ? 'sending...' : 'send email'}
         </button>
       </form>

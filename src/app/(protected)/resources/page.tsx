@@ -3,17 +3,18 @@ import { redirect } from 'next/navigation'
 
 const RESOURCES = [
   { category: 'Community', items: [
-    { title: 'Builders Club Slack', url: '#', desc: 'Join the community workspace' },
+    { title: 'Builders Club Slack', url: 'https://join.slack.com/t/thebuildersclubgroup/shared_invite/zt-3vflw9ksw-WJV~4ZXFRBA5UhMOKz81Fg', desc: 'Join the community workspace' },
     { title: 'Member Directory', url: '/directory', desc: 'Find collaborators and co-founders' },
   ]},
   { category: 'Funding', items: [
-    { title: 'Brown UTRA', url: 'https://www.brown.edu/academics/college/fellowships/utra/', desc: 'Undergraduate teaching and research awards' },
-    { title: 'Nelson Center Grants', url: 'https://entrepreneurship.brown.edu/', desc: 'Nelson Center for Entrepreneurship funding' },
     { title: 'YC Application Guide', url: 'https://www.ycombinator.com/apply/', desc: 'How to apply to Y Combinator' },
   ]},
   { category: 'Reading', items: [
     { title: 'Paul Graham Essays', url: 'http://paulgraham.com/articles.html', desc: 'Essential reading for builders' },
     { title: 'Stripe Atlas Guides', url: 'https://stripe.com/atlas/guides', desc: 'Comprehensive startup guides' },
+  ]},
+  { category: 'Emergent', items: [
+    { title: 'Emergent Conference', url: 'https://emergentconference.org', desc: 'Our parent organization' },
   ]},
 ]
 

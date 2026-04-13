@@ -12,26 +12,21 @@ const TYPE_LABELS: Record<string, string> = {
 
 export function AdminAgendaManager({ eventId, slots }: { eventId: string; slots: AgendaSlot[] }) {
   const router = useRouter()
-  const [adding, setAdding] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [form, setForm] = useState({ slot_type: 'announcement' as SlotType, title: '', presenter_name: '' })
+  const [title, setTitle] = useState('')
+  const [slotType, setSlotType] = useState<SlotType>('announcement')
+  const [presenterName, setPresenterName] = useState('')
 
   async function addSlot() {
-    if (!form.title) { toast.error('Title required'); return }
-    setLoading(true)
+    if (!title) { toast.error('Title required'); return }
     const supabase = createClient()
-    const { error } = await supabase.from('agenda_slots').insert({
-      event_id: eventId, slot_type: form.slot_type, title: form.title,
-      presenter_name: form.presenter_name || null, slot_order: slots.length, approved: true,
+    const maxOrder = Math.max(0, ...slots.map(s => s.slot_order))
+    await supabase.from('agenda_slots').insert({
+      event_id: eventId, title, slot_type: slotType,
+      presenter_name: presenterName || null,
+      slot_order: maxOrder + 1, approved: true,
     })
-    if (error) toast.error('Failed')
-    else { toast.success('Added'); setForm({ slot_type: 'announcement', title: '', presenter_name: '' }); setAdding(false); router.refresh() }
-    setLoading(false)
-  }
-
-  async function approveSlot(id: string) {
-    const supabase = createClient()
-    await supabase.from('agenda_slots').update({ approved: true }).eq('id', id)
+    setTitle(''); setPresenterName('')
+    toast.success('Added')
     router.refresh()
   }
 
@@ -42,75 +37,72 @@ export function AdminAgendaManager({ eventId, slots }: { eventId: string; slots:
     router.refresh()
   }
 
-  const pending = slots.filter(s => !s.approved)
-  const approved = slots.filter(s => s.approved)
+  async function approveSlot(id: string) {
+    const supabase = createClient()
+    await supabase.from('agenda_slots').update({ approved: true }).eq('id', id)
+    toast.success('Approved')
+    router.refresh()
+  }
+
+  async function rejectSlot(id: string) {
+    const supabase = createClient()
+    await supabase.from('agenda_slots').delete().eq('id', id)
+    toast.success('Rejected')
+    router.refresh()
+  }
+
+  const demoCount = slots.filter(s => s.slot_type === 'demo').length
 
   return (
-    <div>
-      {pending.length > 0 && (
-        <>
-          <p style={{ fontSize: 11, color: '#ff6600', marginBottom: 4 }}>PENDING APPROVAL ({pending.length})</p>
-          {pending.map(slot => (
-            <p key={slot.id} style={{ marginBottom: 4 }}>
-              [{TYPE_LABELS[slot.slot_type]}] {slot.title}
-              {slot.presenter_name && ` — ${slot.presenter_name}`}
-              {' '}
-              <a onClick={() => approveSlot(slot.id)} style={{ cursor: 'pointer', fontSize: 11, color: 'green' }}>[approve]</a>
-              {' '}
-              <a onClick={() => removeSlot(slot.id)} style={{ cursor: 'pointer', fontSize: 11, color: 'red' }}>[remove]</a>
-            </p>
-          ))}
-          <hr />
-        </>
-      )}
-
-      {approved.length > 0 ? (
+    <>
+      {slots.length > 0 ? (
         <table>
           <thead>
-            <tr>
-              <th style={{ width: 80 }}>type</th>
-              <th>item</th>
-              <th>presenter</th>
-              <th style={{ width: 60 }}></th>
-            </tr>
+            <tr><th style={{ width: 80 }}>type</th><th>item</th><th>presenter</th><th>status</th><th>actions</th></tr>
           </thead>
           <tbody>
-            {approved.map(slot => (
-              <tr key={slot.id}>
+            {slots.map(slot => (
+              <tr key={slot.id} style={{ opacity: slot.approved ? 1 : 0.6 }}>
                 <td style={{ fontSize: 10, fontFamily: 'monospace' }}>[{TYPE_LABELS[slot.slot_type]}]</td>
                 <td>{slot.title}</td>
                 <td style={{ fontSize: 11 }}>{slot.presenter_name ?? '—'}</td>
-                <td>
-                  <a onClick={() => removeSlot(slot.id)} style={{ cursor: 'pointer', fontSize: 11, color: 'red' }}>[x]</a>
+                <td style={{ fontSize: 11 }}>
+                  {slot.approved
+                    ? <span style={{ color: 'green' }}>[ok]</span>
+                    : <span style={{ color: '#a52a2a' }}>[pending]</span>}
+                </td>
+                <td style={{ fontSize: 11 }}>
+                  {!slot.approved && (
+                    <>
+                      <a onClick={() => approveSlot(slot.id)} style={{ cursor: 'pointer', color: 'green' }}>approve</a>
+                      {' | '}
+                      <a onClick={() => rejectSlot(slot.id)} style={{ cursor: 'pointer', color: '#a52a2a' }}>reject</a>
+                      {' | '}
+                    </>
+                  )}
+                  <a onClick={() => removeSlot(slot.id)} style={{ cursor: 'pointer', color: '#a52a2a' }}>remove</a>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       ) : (
-        <p style={{ color: '#828282', fontSize: 12, marginBottom: 8 }}>No agenda items yet.</p>
+        <p style={{ color: '#828282', fontSize: 12, marginBottom: 8 }}>No agenda items.</p>
       )}
 
-      {adding ? (
-        <div style={{ marginTop: 8, padding: 8, border: '1px solid #ccc', background: '#fff' }}>
-          <select value={form.slot_type} onChange={e => setForm(f => ({ ...f, slot_type: e.target.value as SlotType }))} style={{ marginRight: 4 }}>
-            <option value="announcement">announcement</option>
-            <option value="speaker">speaker</option>
-            <option value="demo">demo</option>
-          </select>
-          <input placeholder="title" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} style={{ width: 180, marginRight: 4 }} />
-          <input placeholder="presenter (opt)" value={form.presenter_name} onChange={e => setForm(f => ({ ...f, presenter_name: e.target.value }))} style={{ width: 140, marginRight: 4 }} />
-          <button onClick={addSlot} disabled={loading} style={{ background: '#e8e8df', border: '1px solid #999', padding: '2px 10px', cursor: 'pointer' }}>
-            {loading ? '...' : 'add'}
-          </button>
-          {' '}
-          <a onClick={() => setAdding(false)} style={{ cursor: 'pointer', fontSize: 11 }}>cancel</a>
-        </div>
-      ) : (
-        <p style={{ marginTop: 8 }}>
-          <a onClick={() => setAdding(true)} style={{ cursor: 'pointer', fontSize: 12 }}>[+ add agenda item]</a>
-        </p>
-      )}
-    </div>
+      <div style={{ marginTop: 12, border: '1px solid #b0c4d8', padding: 8, background: '#fff' }}>
+        <p style={{ fontSize: 11, color: '#828282', marginBottom: 4 }}>ADD ITEM {demoCount >= 3 && '(demo slots full)'}</p>
+        <select value={slotType} onChange={e => setSlotType(e.target.value as SlotType)} style={{ marginRight: 4, width: 120 }}>
+          <option value="announcement">announcement</option>
+          <option value="speaker">speaker</option>
+          <option value="demo" disabled={demoCount >= 3}>demo {demoCount >= 3 ? '(full)' : ''}</option>
+        </select>
+        <input value={title} onChange={e => setTitle(e.target.value)} placeholder="title" style={{ marginRight: 4, width: 160 }} />
+        <input value={presenterName} onChange={e => setPresenterName(e.target.value)} placeholder="presenter" style={{ marginRight: 4, width: 120 }} />
+        <button onClick={addSlot} style={{ background: '#d4e6f1', border: '1px solid #b0c4d8', padding: '2px 10px', cursor: 'pointer' }}>
+          add
+        </button>
+      </div>
+    </>
   )
 }

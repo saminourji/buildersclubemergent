@@ -4,6 +4,11 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpolygon points='0,0 0,14 4,10 7,15 9,14 6,9 11,9' fill='white' stroke='black' stroke-width='1'/%3E%3C/svg%3E") 0 0, auto;
+}
+
+a, button, [role="button"], select, input[type="submit"], input[type="checkbox"] {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpath d='M3,0 L3,12 L6,9 L9,15 L11,14 L8,8 L12,8 Z' fill='white' stroke='black' stroke-width='1'/%3E%3C/svg%3E") 5 0, pointer;
 }
 
 html, body {
@@ -11,7 +16,7 @@ html, body {
   font-size: 13px;
   line-height: 1.5;
   color: #000;
-  background: #f5f5ed;
+  background: #f0f4f8;
 }
 
 a {
@@ -24,7 +29,7 @@ a:visited {
 }
 
 a:hover {
-  color: #ff6600;
+  color: #0066cc;
 }
 
 input, select, textarea, button {
@@ -37,6 +42,7 @@ input[type="email"],
 input[type="url"],
 input[type="search"],
 input[type="datetime-local"],
+input[type="file"],
 select,
 textarea {
   border: 1px solid #999;
@@ -50,7 +56,7 @@ input:focus, select:focus, textarea:focus {
 
 hr {
   border: none;
-  border-top: 1px solid #ccc;
+  border-top: 1px solid #b0c4d8;
   margin: 12px 0;
 }
 
@@ -60,17 +66,17 @@ table {
 }
 
 table th, table td {
-  border: 1px solid #ccc;
+  border: 1px solid #b0c4d8;
   padding: 4px 8px;
   text-align: left;
   font-size: 12px;
 }
 
 table th {
-  background: #e8e8df;
+  background: #d4e6f1;
   font-weight: bold;
 }
 
 table tr:hover {
-  background: #ffffcc;
+  background: #e8f4fd;
 }

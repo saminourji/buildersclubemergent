@@ -16,7 +16,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         admin: {' '}
         <Link href="/admin">overview</Link>{' | '}
         <Link href="/admin/members">members</Link>{' | '}
-        <Link href="/admin/events">events</Link>{' | '}
+        <Link href="/admin/meetings">meetings</Link>{' | '}
         <Link href="/admin/emails">emails</Link>
       </div>
       <hr />

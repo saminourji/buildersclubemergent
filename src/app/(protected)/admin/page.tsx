@@ -1,19 +1,17 @@
 import { createClient } from '@/lib/supabase/server'
+import Link from 'next/link'
+import { format } from 'date-fns'
 
 export default async function AdminPage() {
   const supabase = await createClient()
 
-  const [
-    { count: totalMembers },
-    { count: verifiedMembers },
-    { count: totalEvents },
-    { data: recentMembers },
-  ] = await Promise.all([
-    supabase.from('profiles').select('*', { count: 'exact', head: true }),
-    supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('is_verified', true),
-    supabase.from('events').select('*', { count: 'exact', head: true }),
-    supabase.from('profiles').select('id, full_name, email, created_at, is_verified').order('created_at', { ascending: false }).limit(10),
-  ])
+  const { count: totalMembers } = await supabase.from('profiles').select('*', { count: 'exact', head: true })
+  const { count: verifiedMembers } = await supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('is_verified', true)
+  const { count: totalMeetings } = await supabase.from('events').select('*', { count: 'exact', head: true })
+
+  const { data: recentSignups } = await supabase
+    .from('profiles').select('full_name, email, created_at')
+    .order('created_at', { ascending: false }).limit(5)
 
   return (
     <>
@@ -23,44 +21,38 @@ export default async function AdminPage() {
       <table style={{ border: 'none', maxWidth: 300 }}>
         <tbody>
           <tr style={{ background: 'transparent' }}>
-            <td style={{ border: 'none', padding: '2px 12px 2px 0', fontSize: 12, color: '#666' }}>total members:</td>
-            <td style={{ border: 'none', padding: '2px 0' }}><b>{totalMembers ?? 0}</b></td>
+            <td style={{ border: 'none', fontSize: 12, color: '#666', padding: '2px 12px 2px 0' }}>total members:</td>
+            <td style={{ border: 'none', padding: '2px 0' }}><Link href="/admin/members"><b>{totalMembers ?? 0}</b></Link></td>
           </tr>
           <tr style={{ background: 'transparent' }}>
-            <td style={{ border: 'none', padding: '2px 12px 2px 0', fontSize: 12, color: '#666' }}>verified:</td>
+            <td style={{ border: 'none', fontSize: 12, color: '#666', padding: '2px 12px 2px 0' }}>verified:</td>
             <td style={{ border: 'none', padding: '2px 0' }}><b>{verifiedMembers ?? 0}</b></td>
           </tr>
           <tr style={{ background: 'transparent' }}>
-            <td style={{ border: 'none', padding: '2px 12px 2px 0', fontSize: 12, color: '#666' }}>events:</td>
-            <td style={{ border: 'none', padding: '2px 0' }}><b>{totalEvents ?? 0}</b></td>
+            <td style={{ border: 'none', fontSize: 12, color: '#666', padding: '2px 12px 2px 0' }}>meetings:</td>
+            <td style={{ border: 'none', padding: '2px 0' }}><Link href="/admin/meetings"><b>{totalMeetings ?? 0}</b></Link></td>
           </tr>
         </tbody>
       </table>
 
       <hr />
       <p style={{ fontSize: 11, color: '#828282', marginBottom: 4 }}>RECENT SIGNUPS</p>
-      <table>
-        <thead>
-          <tr>
-            <th>name</th>
-            <th>email</th>
-            <th>status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {recentMembers?.map(m => (
-            <tr key={m.id}>
-              <td>{m.full_name ?? '—'}</td>
-              <td style={{ fontSize: 11 }}>{m.email}</td>
-              <td style={{ fontSize: 11 }}>
-                {m.is_verified
-                  ? <span style={{ color: 'green' }}>[verified]</span>
-                  : <span style={{ color: '#999' }}>[unverified]</span>}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {recentSignups && recentSignups.length > 0 ? (
+        <table>
+          <thead><tr><th>name</th><th>email</th><th>signed up</th></tr></thead>
+          <tbody>
+            {recentSignups.map((s, i) => (
+              <tr key={i}>
+                <td>{s.full_name ?? '—'}</td>
+                <td style={{ fontSize: 11 }}>{s.email}</td>
+                <td style={{ fontSize: 11 }}>{format(new Date(s.created_at), 'MMM d')}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <p style={{ color: '#828282', fontSize: 12 }}>No signups yet.</p>
+      )}
     </>
   )
 }

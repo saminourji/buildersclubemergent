@@ -6,7 +6,7 @@ import { QRDisplay } from '@/components/qr-display'
 import { AdminEventToggle } from '@/components/admin-event-toggle'
 import { AdminAgendaManager } from '@/components/admin-agenda-manager'
 
-export default async function AdminEventDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function AdminMeetingDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
 
@@ -21,14 +21,22 @@ export default async function AdminEventDetailPage({ params }: { params: Promise
   const { count: checkinCount } = await supabase
     .from('check_ins').select('*', { count: 'exact', head: true }).eq('event_id', id)
 
+  // Get attendees
+  const { data: attendeeCheckins } = await supabase
+    .from('check_ins').select('member_id').eq('event_id', id)
+  const attendeeIds = attendeeCheckins?.map(c => c.member_id) ?? []
+  let attendees: { full_name: string | null; email: string }[] = []
+  if (attendeeIds.length > 0) {
+    const { data } = await supabase.from('profiles').select('full_name, email').in('id', attendeeIds)
+    attendees = data ?? []
+  }
+
   const checkinUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/checkin/${event.qr_token}`
 
   return (
     <>
       <p><b>{event.title}</b></p>
-      <p style={{ fontSize: 12, color: '#828282' }}>
-        {format(new Date(event.event_date), 'EEEE, MMMM d, yyyy — h:mm a')}
-      </p>
+      <p style={{ fontSize: 12, color: '#828282' }}>{format(new Date(event.event_date), 'EEEE, MMMM d, yyyy — h:mm a')}</p>
       <hr />
 
       <table style={{ border: 'none', maxWidth: 300 }}>
@@ -39,9 +47,7 @@ export default async function AdminEventDetailPage({ params }: { params: Promise
           </tr>
           <tr style={{ background: 'transparent' }}>
             <td style={{ border: 'none', padding: '2px 12px 2px 0', fontSize: 12, color: '#666' }}>status:</td>
-            <td style={{ border: 'none', padding: '2px 0' }}>
-              <AdminEventToggle eventId={event.id} checkinOpen={event.checkin_open} />
-            </td>
+            <td style={{ border: 'none', padding: '2px 0' }}><AdminEventToggle eventId={event.id} checkinOpen={event.checkin_open} /></td>
           </tr>
         </tbody>
       </table>
@@ -53,6 +59,18 @@ export default async function AdminEventDetailPage({ params }: { params: Promise
       <hr />
       <p style={{ fontSize: 11, color: '#828282', marginBottom: 4 }}>AGENDA</p>
       <AdminAgendaManager eventId={event.id} slots={slots ?? []} />
+
+      {attendees.length > 0 && (
+        <>
+          <hr />
+          <p style={{ fontSize: 11, color: '#828282', marginBottom: 4 }}>ATTENDEES ({attendees.length})</p>
+          <ul style={{ paddingLeft: 20, listStyleType: 'disc' }}>
+            {attendees.map((a, i) => (
+              <li key={i} style={{ fontSize: 12 }}>{a.full_name ?? a.email}</li>
+            ))}
+          </ul>
+        </>
+      )}
     </>
   )
 }

@@ -20,10 +20,11 @@ function LoginContent() {
 
   return (
     <div style={{ maxWidth: 400, margin: '80px auto', padding: '0 16px' }}>
-      <table style={{ border: '1px solid #ccc', width: '100%', background: '#fff' }}>
+      <table style={{ border: '1px solid #b0c4d8', width: '100%', background: '#fff' }}>
         <tbody>
           <tr>
-            <td style={{ background: '#ff6600', padding: '4px 8px', border: 'none' }}>
+            <td style={{ background: '#87CEEB', padding: '4px 8px', border: 'none', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <img src="/logo.png" alt="B" style={{ height: 20, width: 20, imageRendering: 'pixelated' }} />
               <b style={{ color: '#000' }}>Builders Club</b>
             </td>
           </tr>
@@ -31,7 +32,7 @@ function LoginContent() {
             <td style={{ padding: '20px', border: 'none' }}>
               <p style={{ marginBottom: 8 }}>
                 Welcome to the <b>Builders Club</b> member platform.<br />
-                Emergent @ Brown University.
+                <a href="https://emergentconference.org" target="_blank" rel="noopener noreferrer">Emergent</a> @ Brown University.
               </p>
               <hr />
               <p style={{ marginBottom: 12, fontSize: 12 }}>
@@ -40,9 +41,9 @@ function LoginContent() {
               <button
                 onClick={handleLogin}
                 style={{
-                  background: '#ff6600',
+                  background: '#87CEEB',
                   color: '#000',
-                  border: '1px solid #cc5200',
+                  border: '1px solid #5BA3C9',
                   padding: '6px 16px',
                   cursor: 'pointer',
                   fontWeight: 'bold',

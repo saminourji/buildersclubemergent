@@ -4,18 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
-
-const INTEREST_AREAS = [
-  'Software / Apps', 'Hardware / Devices', 'Biotech / Life Sciences',
-  'Climate / Energy', 'AI / ML', 'Consumer', 'Enterprise / B2B',
-  'Social Impact', 'Creative / Media', 'Other',
-]
-
-const RESOURCE_OPTIONS = [
-  'Funding & grants', 'Co-founder matching', 'Mentorship',
-  'Office hours w/ founders', 'Guest speaker sessions',
-  'Technical workshops', 'Demo opportunities', 'Community & networking',
-]
+import { CLASS_YEARS, INTEREST_AREAS, RESOURCE_OPTIONS } from '@/lib/constants'
 
 export default function OnboardingPage() {
   const router = useRouter()
@@ -24,7 +13,7 @@ export default function OnboardingPage() {
     full_name: '',
     class_year: '',
     concentration: '',
-    interest_area: '',
+    interest_area: [] as string[],
     build_stage: '',
     project_name: '',
     project_url: '',
@@ -33,6 +22,15 @@ export default function OnboardingPage() {
 
   function update(field: string, value: string) {
     setForm(f => ({ ...f, [field]: value }))
+  }
+
+  function toggleInterest(a: string) {
+    setForm(f => ({
+      ...f,
+      interest_area: f.interest_area.includes(a)
+        ? f.interest_area.filter(x => x !== a)
+        : [...f.interest_area, a],
+    }))
   }
 
   function toggleResource(r: string) {
@@ -58,9 +56,9 @@ export default function OnboardingPage() {
       id: user.id,
       email: user.email ?? '',
       full_name: form.full_name || null,
-      class_year: form.class_year ? parseInt(form.class_year) : null,
+      class_year: form.class_year ? (form.class_year === 'Grad Student' ? 9999 : parseFloat(form.class_year) * 10) : null,
       concentration: form.concentration || null,
-      interest_area: form.interest_area || null,
+      interest_area: form.interest_area,
       build_stage: form.build_stage || null,
       project_name: form.project_name || null,
       project_url: form.project_url || null,
@@ -78,10 +76,10 @@ export default function OnboardingPage() {
 
   return (
     <div style={{ maxWidth: 520, margin: '40px auto', padding: '0 16px' }}>
-      <table style={{ border: '1px solid #ccc', width: '100%', background: '#fff' }}>
+      <table style={{ border: '1px solid #b0c4d8', width: '100%', background: '#fff' }}>
         <tbody>
           <tr>
-            <td style={{ background: '#ff6600', padding: '4px 8px', border: 'none' }}>
+            <td style={{ background: '#87CEEB', padding: '4px 8px', border: 'none' }}>
               <b style={{ color: '#000' }}>New Member Registration</b>
             </td>
           </tr>
@@ -100,17 +98,11 @@ export default function OnboardingPage() {
                     <Row label="Class year">
                       <select value={form.class_year} onChange={e => update('class_year', e.target.value)} style={{ width: '100%' }}>
                         <option value="">--</option>
-                        {[2025, 2026, 2027, 2028, 2029].map(y => <option key={y} value={String(y)}>{y}</option>)}
+                        {CLASS_YEARS.map(y => <option key={y} value={y}>{y}</option>)}
                       </select>
                     </Row>
                     <Row label="Concentration">
                       <input type="text" value={form.concentration} onChange={e => update('concentration', e.target.value)} style={{ width: '100%' }} />
-                    </Row>
-                    <Row label="Interest area">
-                      <select value={form.interest_area} onChange={e => update('interest_area', e.target.value)} style={{ width: '100%' }}>
-                        <option value="">--</option>
-                        {INTEREST_AREAS.map(a => <option key={a} value={a}>{a}</option>)}
-                      </select>
                     </Row>
                     <Row label="Build stage *">
                       <select value={form.build_stage} onChange={e => update('build_stage', e.target.value)} style={{ width: '100%' }}>
@@ -135,6 +127,23 @@ export default function OnboardingPage() {
                 </table>
 
                 <hr />
+                <p style={{ marginBottom: 8, fontSize: 12 }}><b>Interests</b> (click to select multiple)</p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 12 }}>
+                  {INTEREST_AREAS.map(a => (
+                    <span
+                      key={a}
+                      onClick={() => toggleInterest(a)}
+                      style={{
+                        display: 'inline-block', padding: '2px 8px', border: '1px solid #999',
+                        background: form.interest_area.includes(a) ? '#87CEEB' : '#fff',
+                        fontWeight: form.interest_area.includes(a) ? 'bold' : 'normal',
+                        cursor: 'pointer', fontSize: 12,
+                      }}
+                    >
+                      {a}
+                    </span>
+                  ))}
+                </div>
 
                 <p style={{ marginBottom: 8, fontSize: 12 }}><b>What resources do you want?</b> (click to select)</p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
@@ -143,14 +152,10 @@ export default function OnboardingPage() {
                       key={r}
                       onClick={() => toggleResource(r)}
                       style={{
-                        display: 'inline-block',
-                        padding: '2px 8px',
-                        border: '1px solid #999',
-                        background: form.resource_preferences.includes(r) ? '#ff6600' : '#fff',
-                        color: form.resource_preferences.includes(r) ? '#000' : '#666',
+                        display: 'inline-block', padding: '2px 8px', border: '1px solid #999',
+                        background: form.resource_preferences.includes(r) ? '#87CEEB' : '#fff',
                         fontWeight: form.resource_preferences.includes(r) ? 'bold' : 'normal',
-                        cursor: 'pointer',
-                        fontSize: 12,
+                        cursor: 'pointer', fontSize: 12,
                       }}
                     >
                       {r}
@@ -159,19 +164,9 @@ export default function OnboardingPage() {
                 </div>
 
                 <hr />
-
                 <button
-                  type="submit"
-                  disabled={loading}
-                  style={{
-                    background: '#ff6600',
-                    color: '#000',
-                    border: '1px solid #cc5200',
-                    padding: '6px 16px',
-                    cursor: 'pointer',
-                    fontWeight: 'bold',
-                    fontSize: 13,
-                  }}
+                  type="submit" disabled={loading}
+                  style={{ background: '#87CEEB', color: '#000', border: '1px solid #5BA3C9', padding: '6px 16px', cursor: 'pointer', fontWeight: 'bold', fontSize: 13 }}
                 >
                   {loading ? 'saving...' : 'submit'}
                 </button>
@@ -187,12 +182,8 @@ export default function OnboardingPage() {
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <tr style={{ background: 'transparent' }}>
-      <td style={{ border: 'none', padding: '4px 0', width: 120, verticalAlign: 'top', fontSize: 12, color: '#666' }}>
-        {label}:
-      </td>
-      <td style={{ border: 'none', padding: '4px 0' }}>
-        {children}
-      </td>
+      <td style={{ border: 'none', padding: '4px 0', width: 120, verticalAlign: 'top', fontSize: 12, color: '#666' }}>{label}:</td>
+      <td style={{ border: 'none', padding: '4px 0' }}>{children}</td>
     </tr>
   )
 }

@@ -24,7 +24,14 @@ export default async function ProtectedLayout({ children }: { children: React.Re
         {children}
       </div>
       <div style={{ textAlign: 'center', padding: '20px 0', fontSize: '11px', color: '#828282' }}>
-        builders club &mdash; emergent @ brown &mdash; est. 2025
+        <a href="https://emergentconference.org" target="_blank" rel="noopener noreferrer" style={{ color: '#828282' }}>
+          Builders Club
+        </a>
+        {' \u2014 '}
+        <a href="https://emergentconference.org" target="_blank" rel="noopener noreferrer" style={{ color: '#828282' }}>
+          Emergent
+        </a>
+        {' \u2014 est. Spring 2026'}
       </div>
     </>
   )

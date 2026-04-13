@@ -1,14 +1,15 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
-import { format } from 'date-fns'
-import { Event, AgendaSlot } from '@/types/database'
+import { format, isBefore } from 'date-fns'
+import { Event, AgendaSlot, Profile } from '@/types/database'
 import { CheckInButton } from '@/components/checkin-button'
+import { formatClassYear } from '@/lib/helpers'
 
 const TYPE_LABELS: Record<string, string> = {
   announcement: 'ANNOUNCE', speaker: 'SPEAKER', demo: 'DEMO',
 }
 
-export default async function EventPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function MeetingPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -31,9 +32,24 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
   const { data: profile } = await supabase
     .from('profiles').select('is_admin, full_name').eq('id', user.id).single()
 
-  const visibleSlots = profile?.is_admin
-    ? (slots ?? [])
-    : (slots ?? []).filter(s => s.approved)
+  const visibleSlots = profile?.is_admin ? (slots ?? []) : (slots ?? []).filter(s => s.approved)
+  const isFuture = isBefore(new Date(), new Date(event.event_date))
+
+  // Get attendees
+  const { data: attendeeCheckins } = await supabase
+    .from('check_ins').select('member_id').eq('event_id', id)
+  const attendeeIds = attendeeCheckins?.map(c => c.member_id) ?? []
+
+  let attendees: { full_name: string | null; email: string }[] = []
+  if (attendeeIds.length > 0) {
+    const { data } = await supabase
+      .from('profiles').select('full_name, email')
+      .in('id', attendeeIds)
+    attendees = data ?? []
+  }
+
+  // Count current demo slots (non-announcement, non-speaker)
+  const demoCount = (slots ?? []).filter(s => s.slot_type === 'demo').length
 
   return (
     <>
@@ -41,7 +57,6 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
       <p style={{ fontSize: 12, color: '#828282' }}>
         {format(new Date(event.event_date), 'EEEE, MMMM d, yyyy — h:mm a')}
       </p>
-
       {event.description && <p style={{ marginTop: 8, fontSize: 12 }}>{event.description}</p>}
 
       <hr />
@@ -52,6 +67,8 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
           <span style={{ color: 'green' }}><b>[you attended this meeting]</b></span>
         ) : event.checkin_open ? (
           <CheckInButton eventId={event.id} />
+        ) : isFuture ? (
+          <span style={{ color: '#828282' }}>not opened yet</span>
         ) : (
           <span style={{ color: '#828282' }}>closed</span>
         )}
@@ -72,12 +89,10 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
             <tbody>
               {visibleSlots.map(slot => (
                 <tr key={slot.id} style={{ opacity: slot.approved ? 1 : 0.5 }}>
-                  <td style={{ fontSize: 10, fontFamily: 'monospace' }}>
-                    [{TYPE_LABELS[slot.slot_type]}]
-                  </td>
+                  <td style={{ fontSize: 10, fontFamily: 'monospace' }}>[{TYPE_LABELS[slot.slot_type]}]</td>
                   <td>
                     {slot.title}
-                    {!slot.approved && <span style={{ color: '#ff6600', fontSize: 10 }}> (pending)</span>}
+                    {!slot.approved && <span style={{ color: '#0066cc', fontSize: 10 }}> (pending)</span>}
                   </td>
                   <td style={{ fontSize: 11 }}>{slot.presenter_name ?? '—'}</td>
                 </tr>
@@ -87,10 +102,30 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
         </>
       )}
 
-      {event.checkin_open && !alreadyCheckedIn && (
+      {event.checkin_open && demoCount < 3 && (
         <>
           <hr />
           <DemoSignupForm eventId={event.id} userId={user.id} />
+        </>
+      )}
+      {event.checkin_open && demoCount >= 3 && (
+        <>
+          <hr />
+          <p style={{ fontSize: 12, color: '#828282' }}>Demo slots are full (max 3 per meeting).</p>
+        </>
+      )}
+
+      {attendees.length > 0 && (
+        <>
+          <hr />
+          <p style={{ fontSize: 11, color: '#828282', marginBottom: 4 }}>ATTENDEES ({attendees.length})</p>
+          <ul style={{ paddingLeft: 20, listStyleType: 'disc' }}>
+            {attendees.map((a, i) => (
+              <li key={i} style={{ fontSize: 12 }}>
+                {a.full_name ?? a.email}
+              </li>
+            ))}
+          </ul>
         </>
       )}
     </>
@@ -102,12 +137,10 @@ function DemoSignupForm({ eventId, userId }: { eventId: string; userId: string }
     <form action="/api/demo-signup" method="post">
       <input type="hidden" name="event_id" value={eventId} />
       <input type="hidden" name="presenter_id" value={userId} />
-      <p style={{ fontSize: 12, marginBottom: 4 }}>
-        <b>Want to demo?</b>
-      </p>
-      <input name="title" placeholder="what are you demoing?" required style={{ width: 250, marginRight: 4 }} />
-      <button type="submit" style={{ background: '#e8e8df', border: '1px solid #999', padding: '2px 10px', cursor: 'pointer' }}>
-        sign up
+      <p style={{ fontSize: 12, marginBottom: 4 }}><b>Request a demo slot</b> (subject to admin approval, max 3 per meeting)</p>
+      <input name="title" placeholder="what are you presenting?" required style={{ width: 250, marginRight: 4 }} />
+      <button type="submit" style={{ background: '#d4e6f1', border: '1px solid #b0c4d8', padding: '2px 10px', cursor: 'pointer' }}>
+        request slot
       </button>
     </form>
   )

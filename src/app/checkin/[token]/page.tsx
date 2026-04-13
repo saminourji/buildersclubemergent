@@ -20,10 +20,10 @@ export default async function CheckInPage({ params }: { params: Promise<{ token:
 
   return (
     <div style={{ maxWidth: 400, margin: '80px auto', padding: '0 16px' }}>
-      <table style={{ border: '1px solid #ccc', width: '100%', background: '#fff' }}>
+      <table style={{ border: '1px solid #b0c4d8', width: '100%', background: '#fff' }}>
         <tbody>
           <tr>
-            <td style={{ background: '#ff6600', padding: '4px 8px', border: 'none' }}>
+            <td style={{ background: '#87CEEB', padding: '4px 8px', border: 'none' }}>
               <b style={{ color: '#000' }}>Check-in</b>
             </td>
           </tr>

@@ -8,7 +8,7 @@ import { Profile } from '@/types/database'
 const NAV_LINKS = [
   { href: '/dashboard', label: 'home' },
   { href: '/directory', label: 'directory' },
-  { href: '/events', label: 'events' },
+  { href: '/meetings', label: 'meetings' },
   { href: '/resources', label: 'resources' },
   { href: '/profile', label: 'profile' },
 ]
@@ -24,11 +24,14 @@ export function Nav({ profile }: { profile: Profile }) {
   }
 
   return (
-    <div style={{ background: '#ff6600', padding: '2px 8px' }}>
+    <div style={{ background: '#87CEEB', padding: '2px 8px' }}>
       <table style={{ border: 'none', width: '100%' }}>
         <tbody>
           <tr style={{ background: 'transparent' }}>
-            <td style={{ border: 'none', padding: '4px 8px' }}>
+            <td style={{ border: 'none', padding: '4px 8px', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Link href="/dashboard" style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
+                <img src="/logo.png" alt="B" style={{ height: 20, width: 20, imageRendering: 'pixelated' }} />
+              </Link>
               <b>
                 <Link href="/dashboard" style={{ color: '#000', textDecoration: 'none' }}>
                   Builders Club
@@ -70,12 +73,7 @@ export function Nav({ profile }: { profile: Profile }) {
               <span style={{ fontSize: '12px' }}>
                 {profile.full_name ?? profile.email}
                 {' | '}
-                <a
-                  onClick={handleSignOut}
-                  style={{ color: '#000', cursor: 'pointer', textDecoration: 'underline' }}
-                >
-                  logout
-                </a>
+                <a onClick={handleSignOut} style={{ color: '#000', cursor: 'pointer', textDecoration: 'underline' }}>logout</a>
               </span>
             </td>
           </tr>
