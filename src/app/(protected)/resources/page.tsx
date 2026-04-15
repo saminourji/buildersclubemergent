@@ -12,6 +12,7 @@ const RESOURCES = [
   { category: 'Reading', items: [
     { title: 'Paul Graham Essays', url: 'http://paulgraham.com/articles.html', desc: 'Essential reading for builders' },
     { title: 'Stripe Atlas Guides', url: 'https://stripe.com/atlas/guides', desc: 'Comprehensive startup guides' },
+    { title: 'Outlier\u2019s Path', url: 'https://outlierspath.com/', desc: 'Essays and frameworks for building' },
   ]},
   { category: 'Emergent', items: [
     { title: 'Emergent Conference', url: 'https://emergentconference.org', desc: 'Our parent organization' },
